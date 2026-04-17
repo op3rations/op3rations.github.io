@@ -1,0 +1,2 @@
+/*
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' https://script.google.com https://cdnjs.cloudflare.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com

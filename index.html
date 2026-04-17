@@ -457,16 +457,23 @@ function vFunds(){
     }
     h+='</div><button class="btn sm" onclick="addF(\''+key+'\')">+ Adicionar</button></div>';
   }
-  h+='</div><div class="card" style="border-top:3px solid #F15D1B">';
-  h+='<div style="font-weight:700;color:#4F5053;margin-bottom:12px;font-size:15px">Gestoras / Administradoras</div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">';
+  h+='</div>';
+
+  // Admins — compact tag view
   var admins=S.funds.admins||[];
+  h+='<div class="card" style="border-top:3px solid #F15D1B;margin-bottom:1rem">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
+  h+='<div style="font-weight:700;color:#4F5053;font-size:15px">Gestoras / Administradoras <span style="font-size:12px;color:#888;font-weight:400">('+admins.length+')</span></div>';
+  h+='<button class="btn sm" onclick="addF(\'admins\')">+ Adicionar</button></div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
   for(var i=0;i<admins.length;i++){
-    h+='<div style="display:flex;gap:6px"><input type="text" value="'+esc(admins[i])+'" onchange="editF(\'admins\','+i+',this.value)">';
-    h+='<button class="btn sm" style="flex-shrink:0" onclick="rmvF(\'admins\','+i+')">&times;</button></div>';
+    h+='<div style="display:inline-flex;align-items:center;gap:4px;background:#F7F7F7;border:1px solid #e0e0e0;border-radius:20px;padding:3px 10px;font-size:12px">';
+    h+='<span>'+esc(admins[i])+'</span>';
+    h+='<button onclick="rmvF(\'admins\','+i+')" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;padding:0;line-height:1">&times;</button></div>';
   }
-  h+='</div><button class="btn sm" onclick="addF(\'admins\')">+ Adicionar</button></div>';
-  h+='<p style="font-size:13px;color:#626367;margin-top:1rem">Edite diretamente. Salvo automaticamente.</p>';
+  h+='</div></div>';
+
+  h+='<p style="font-size:13px;color:#626367">Edite fundos diretamente. Salvo automaticamente.</p>';
   return h;
 }
 

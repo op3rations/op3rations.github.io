@@ -145,7 +145,8 @@ const status=o=>{const p=pct(o);return p===100?'Concluído':p===0?'Não iniciado
 const bcls=o=>{const p=pct(o);return p===100?'b-ok':p===0?'b-info':'b-warn';};
 const fmtV=o=>{if(!o.valor)return'—';try{return new Intl.NumberFormat('pt-BR',{style:'currency',currency:o.moeda||'USD',maximumFractionDigits:0}).format(o.valor);}catch{return o.valor;}};
 const e=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-const fmtD=d=>{if(!d)return null;const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`;};`<datalist id="gest-dl">${ADMINS.map(g=>`<option value="${e(g)}">`).join('')}${HFUNDS.map(g=>`<option value="${e(g)}">`).join('')}</datalist>`;
+const fmtD=d=>{if(!d)return null;const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`;};
+const DL=()=>`<datalist id="gest-dl">${ADMINS.map(g=>`<option value="${e(g)}">`).join('')}${HFUNDS.map(g=>`<option value="${e(g)}">`).join('')}</datalist>`;`<datalist id="gest-dl">${ADMINS.map(g=>`<option value="${e(g)}">`).join('')}${HFUNDS.map(g=>`<option value="${e(g)}">`).join('')}</datalist>`;
 
 function R(){
   const root=document.getElementById('root');if(!root)return;

@@ -266,17 +266,22 @@ function LOGO_SVG(w,h){return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 90
 function R(){
   var root=document.getElementById('root');if(!root)return;
   if(S.loading){root.innerHTML='<div style="text-align:center;padding:4rem;color:#626367"><div style="font-size:14px;color:#F15D1B;font-weight:600">Carregando dados...</div></div>';return;}
-  var h='<div class="nav">';
-  h+=LOGO_SVG(56,22);
-  h+='<button class="nb'+(S.view!=='funds'?' active':'')+'" onclick="go(\'orders\')">Ordens</button>';
-  h+='<button class="nb'+(S.view==='funds'?' active':'')+'" onclick="go(\'funds\')">Fundos</button>';
-  h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px">';
-  h+='<span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span>';
-  h+='<button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
-  if(S.view==='orders')h+=vOrders();
-  else if(S.view==='detail')h+=vDetail();
-  else h+=vFunds();
-  root.innerHTML=h;
+  try{
+    var h='<div class="nav">';
+    h+=LOGO_SVG(56,22);
+    h+='<button class="nb'+(S.view!=='funds'?' active':'')+'" onclick="go(\'orders\')">Ordens</button>';
+    h+='<button class="nb'+(S.view==='funds'?' active':'')+'" onclick="go(\'funds\')">Fundos</button>';
+    h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px">';
+    h+='<span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span>';
+    h+='<button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
+    if(S.view==='orders')h+=vOrders();
+    else if(S.view==='detail')h+=vDetail();
+    else if(S.view==='funds')h+=vFunds();
+    root.innerHTML=h;
+  }catch(err){
+    root.innerHTML='<div style="padding:2rem;color:#c0392b;font-size:13px">Erro ao renderizar: '+err.message+'<br><button class="btn sm" onclick="go(\'orders\')">Voltar</button></div>';
+    console.error('Render error:',err);
+  }
 }
 
 function vOrders(){

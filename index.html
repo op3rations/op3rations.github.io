@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;font-size:16px;line-height:1.6;background:#f5f5f3;padding:1rem}
 .wrap{max-width:960px;margin:0 auto;background:#fff;border-radius:12px;padding:1.5rem;min-height:100vh}
-.nav{display:flex;gap:6px;padding-bottom:12px;border-bottom:1px solid #e0e0e0;margin-bottom:1.25rem;align-items:center}
+.nav{display:flex;gap:6px;padding-bottom:12px;border-bottom:1px solid #e0e0e0;margin-bottom:1.25rem}
 .nb{background:none;border:none;padding:6px 16px;cursor:pointer;border-radius:8px;color:#555;font-size:14px}
 .nb.active{background:#E6F1FB;color:#0C447C;font-weight:600}
 .nb:hover:not(.active){background:#f0f0f0}
@@ -18,8 +18,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1
 .btn.p:hover{background:#0C447C}
 .btn.sm{padding:4px 10px;font-size:12px}
 .btn.dr{color:#c0392b;border-color:#e0b0b0}
-.btn.gr{background:#2d7a2d;color:#fff;border-color:transparent}
-.btn.gr:hover{background:#1f5c1f}
 .btn.am{background:#854F0B;color:#fff;border-color:transparent}
 .btn.am:hover{background:#633806}
 .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem}
@@ -56,39 +54,20 @@ label{font-size:11px;color:#185FA5;font-weight:700;text-transform:uppercase;lett
 .ord-card:hover{border-color:#B5D4F4;border-left:3px solid #185FA5}
 .ord-card.wire-urgent{border-color:#f09595;border-left:3px solid #E24B4A}
 .ord-card.wire-overdue{border-color:#E24B4A;border-left:3px solid #A32D2D;background:#FFF8F8}
-.div-alert{background:#FCEBEB;border:1px solid #f09595;border-radius:8px;padding:8px 12px;font-size:13px;color:#A32D2D;font-weight:600;margin-top:10px;display:flex;align-items:center;gap:6px}
+.div-alert{background:#FCEBEB;border:1px solid #f09595;border-radius:8px;padding:8px 12px;font-size:13px;color:#A32D2D;font-weight:600;margin-top:10px}
 .save-bar{position:fixed;bottom:16px;right:16px;background:#185FA5;color:#fff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;display:none;z-index:999}
 .save-bar.vis{display:block}
 .err-bar{position:fixed;bottom:16px;right:16px;background:#c0392b;color:#fff;font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;display:none;z-index:999}
 .err-bar.vis{display:block}
 .filter-bar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
 .filter-bar select{width:auto;font-size:13px;padding:6px 10px}
-@media print{
-  body{background:#fff;padding:0}
-  .wrap{border-radius:0;padding:1rem;min-height:auto}
-  .no-print{display:none!important}
-  .print-section{display:block!important}
-  .step-item{filter:none!important;opacity:1!important;transform:none!important;page-break-inside:avoid}
-}
-.print-section{display:none}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div id="root"></div>
-</div>
+<div class="wrap"><div id="root"></div></div>
 <div class="save-bar" id="save-bar">Salvando...</div>
 <div class="err-bar" id="err-bar">Erro ao salvar.</div>
 <script>
-function loadXLSX(cb){
-  if(typeof XLSX!=='undefined'){cb();return;}
-  var s=document.createElement('script');
-  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-  s.onload=cb;
-  s.onerror=()=>alert('Não foi possível carregar a biblioteca de exportação. Verifique sua conexão.');
-  document.head.appendChild(s);
-}
-
 const SCRIPT_URL='COLE_AQUI_A_URL_DO_APPS_SCRIPT';
 
 const STEPS=[
@@ -120,8 +99,7 @@ const lsLoad=k=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):null
 const lsSave=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 
 let S={view:'orders',orders:[],funds:{investidor:[...DF_INV],investido:[...DF_IVD],admins:[...ADMINS_DEF]},selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''}};
-let _ik=false;
-let _saveTimer=null;
+let _ik=false,_saveTimer=null;
 
 function showSave(){const b=document.getElementById('save-bar');if(b){b.className='save-bar vis';clearTimeout(_saveTimer);_saveTimer=setTimeout(()=>b.className='save-bar',2000);}}
 function showErr(){const b=document.getElementById('err-bar');if(b){b.className='err-bar vis';setTimeout(()=>b.className='err-bar',4000);}}
@@ -134,8 +112,7 @@ async function init(){
   }
   try{
     const resp=await fetch(SCRIPT_URL+'?action=getData');
-    const text=await resp.text();
-    const data=JSON.parse(text);
+    const data=JSON.parse(await resp.text());
     S.orders=data.orders||[];
     S.funds=data.funds||{investidor:[...DF_INV],investido:[...DF_IVD],admins:[...ADMINS_DEF]};
   }catch(err){
@@ -176,10 +153,9 @@ function wireStatus(o){
   if(diff<0)return{cls:'wire-overdue',badge:'b-red',lbl:'Wire vencida'};
   if(diff===0)return{cls:'wire-urgent',badge:'b-red',lbl:'Wire hoje'};
   if(diff===1)return{cls:'wire-urgent',badge:'b-ora',lbl:'Wire amanhã'};
-  if(diff===2)return{cls:'wire-urgent',badge:'b-ora',lbl:`Wire em 2 dias`};
+  if(diff===2)return{cls:'wire-urgent',badge:'b-ora',lbl:'Wire em 2 dias'};
   return{cls:'',badge:'b-info',lbl:`Wire: ${fmtD(o.wire)}`};
 }
-
 function hasDivergence(o){
   if(!o.valorConfirmado&&o.valorConfirmado!==0)return false;
   return parseFloat(o.valorConfirmado)!==parseFloat(o.valor);
@@ -187,11 +163,8 @@ function hasDivergence(o){
 
 function R(){
   const root=document.getElementById('root');if(!root)return;
-  if(S.loading){
-    root.innerHTML=`<div style="text-align:center;padding:4rem;color:#555"><div style="font-size:14px;color:#185FA5;font-weight:600;margin-bottom:8px">Carregando dados...</div></div>`;
-    return;
-  }
-  let h=`<div class="nav no-print">
+  if(S.loading){root.innerHTML=`<div style="text-align:center;padding:4rem;color:#555"><div style="font-size:14px;color:#185FA5;font-weight:600">Carregando dados...</div></div>`;return;}
+  let h=`<div class="nav">
     <button class="nb${S.view!=='funds'?' active':''}" onclick="go('orders')">Ordens</button>
     <button class="nb${S.view==='funds'?' active':''}" onclick="go('funds')">Fundos</button>
   </div>`;
@@ -205,26 +178,23 @@ function vOrders(){
   const all=S.orders;
   const concl=all.filter(o=>pct(o)===100).length;
   const and=all.filter(o=>pct(o)>0&&pct(o)<100).length;
-  const urgent=all.filter(o=>{const w=wireStatus(o);return w&&(w.cls==='wire-urgent'||w.cls==='wire-overdue');}).length;
-
+  const urgent=all.filter(o=>{const w=wireStatus(o);return w&&w.cls!=='';}).length;
   let os=[...all];
-  const fFiv=S.filters.fiv;const fTipo=S.filters.tipo;const fSt=S.filters.status;
+  const{fiv:fFiv,tipo:fTipo,status:fSt}=S.filters;
   if(fFiv)os=os.filter(o=>o.fiv===fFiv);
   if(fTipo)os=os.filter(o=>o.tipo===fTipo);
-  if(fSt){
-    if(fSt==='Concluído')os=os.filter(o=>pct(o)===100);
-    else if(fSt==='Em andamento')os=os.filter(o=>pct(o)>0&&pct(o)<100);
-    else if(fSt==='Não iniciado')os=os.filter(o=>pct(o)===0);
-    else if(fSt==='Urgente')os=os.filter(o=>{const w=wireStatus(o);return w&&w.cls!=='';});
-  }
+  if(fSt==='Concluído')os=os.filter(o=>pct(o)===100);
+  else if(fSt==='Em andamento')os=os.filter(o=>pct(o)>0&&pct(o)<100);
+  else if(fSt==='Não iniciado')os=os.filter(o=>pct(o)===0);
+  else if(fSt==='Urgente')os=os.filter(o=>{const w=wireStatus(o);return w&&w.cls!=='';});
 
   let h=`<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">
     <div>
       <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#185FA5;font-weight:700;margin-bottom:4px">Operações Offshore</div>
       <h1 style="font-size:26px;font-weight:700">Painel de Subscription Documents</h1>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn am sm" onclick="exportXLSX()">Exportar XLSX</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn am" onclick="exportXLSX()">Exportar XLSX</button>
       <button class="btn p" onclick="togForm()">+ Nova ordem</button>
     </div>
   </div>
@@ -250,7 +220,7 @@ function vOrders(){
   if(S.showForm)h+=rForm();
 
   const fivOpts=[...new Set(all.map(o=>o.fiv).filter(Boolean))];
-  h+=`<div class="filter-bar no-print">
+  h+=`<div class="filter-bar">
     <span style="font-size:13px;font-weight:600;color:#555">Filtros:</span>
     <select style="width:180px" onchange="setFilter('fiv',this.value)">
       <option value="">Todos os fundos</option>
@@ -269,11 +239,11 @@ function vOrders(){
       <option value="Urgente"${fSt==='Urgente'?' selected':''}>Wire urgente</option>
     </select>
     ${(fFiv||fTipo||fSt)?`<button class="btn sm" onclick="clearFilters()">Limpar filtros</button>`:''}
-    <span style="font-size:12px;color:#888;margin-left:4px">${os.length} de ${all.length} ordens</span>
+    <span style="font-size:12px;color:#888">${os.length} de ${all.length} ordens</span>
   </div>`;
 
   if(os.length===0){
-    h+=`<div style="text-align:center;padding:3rem 1rem;color:#555;border:1px dashed #ccc;border-radius:12px">${all.length===0?'Nenhuma ordem cadastrada ainda.<br>Clique em <strong style="color:#185FA5">+ Nova ordem</strong> para começar.':'Nenhuma ordem encontrada com os filtros selecionados.'}</div>`;
+    h+=`<div style="text-align:center;padding:3rem 1rem;color:#555;border:1px dashed #ccc;border-radius:12px">${all.length===0?'Nenhuma ordem cadastrada. Clique em <strong style="color:#185FA5">+ Nova ordem</strong>.':'Nenhuma ordem com os filtros selecionados.'}</div>`;
   }else{
     h+=`<div style="display:flex;flex-direction:column;gap:8px">`;
     for(const o of os){
@@ -283,7 +253,7 @@ function vOrders(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div>
             <div style="font-weight:600;margin-bottom:3px;font-size:15px">${e(o.fi)||'—'} <span style="color:#185FA5">→</span> ${e(o.fiv)||'—'}</div>
-            <div style="font-size:13px;color:#444;display:flex;align-items:center;gap:6px">${e(o.gestora)||'—'}${o.inKind?' <span class="badge b-ik">In-Kind</span>':''}</div>
+            <div style="font-size:13px;color:#444">${e(o.gestora)||'—'}${o.inKind?' <span class="badge b-ik">In-Kind</span>':''}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
             ${ws?`<span class="badge ${ws.badge}">${ws.lbl}</span>`:''}
@@ -350,7 +320,7 @@ function rForm(){
         </div>
       </div>
     </div>
-    <div style="display:flex;justify-content:flex-end;margin-top:4px">
+    <div style="display:flex;justify-content:flex-end">
       <button class="btn p" style="padding:10px 28px;font-size:15px;font-weight:600" onclick="createOrd()">Criar ordem →</button>
     </div>
   </div>`;
@@ -361,26 +331,25 @@ function vDetail(){
   if(!o){go('orders');return'';}
   const dn=o.steps.filter(s=>s.done).length;const p=pct(o);const f=S.focusStep;
   const ws=wireStatus(o);const div=hasDivergence(o);
-  let h=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem" class="no-print">
+  let h=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
     <button class="btn sm" onclick="go('orders')">← Voltar</button>
     <div style="flex:1">
       <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#185FA5;margin-bottom:2px;font-weight:700">${e(o.tipo)||'—'} · ${e(o.gestora)||'—'}</div>
       <h1 style="font-size:16px;font-weight:700">${e(o.fi)||'—'} <span style="color:#185FA5">→</span> ${e(o.fiv)||'—'}</h1>
     </div>
-    <button class="btn sm gr" onclick="printOrd()">Exportar PDF</button>
     <button class="btn sm dr" onclick="delOrd('${o.id}')">Excluir</button>
   </div>
   <div class="card" style="margin-bottom:1rem;border-top:2px solid #185FA5">
     <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px">
-      <div><label style="font-weight:700">Fundo investidor</label><span style="font-size:15px;font-weight:400">${e(o.fi)||'—'}</span></div>
-      <div><label style="font-weight:700">Fundo investido</label><span style="font-size:15px;font-weight:400">${e(o.fiv)||'—'}</span></div>
-      <div><label style="font-weight:700">Gestora / Admin.</label><span style="font-size:15px;font-weight:400">${e(o.gestora)||'—'}</span></div>
-      <div><label style="font-weight:700">Tipo</label><span style="font-size:15px;font-weight:400">${e(o.tipo)||'—'}</span></div>
+      <div><label style="font-weight:700">Fundo investidor</label><span style="font-size:15px">${e(o.fi)||'—'}</span></div>
+      <div><label style="font-weight:700">Fundo investido</label><span style="font-size:15px">${e(o.fiv)||'—'}</span></div>
+      <div><label style="font-weight:700">Gestora / Admin.</label><span style="font-size:15px">${e(o.gestora)||'—'}</span></div>
+      <div><label style="font-weight:700">Tipo</label><span style="font-size:15px">${e(o.tipo)||'—'}</span></div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px">
-      <div><label style="font-weight:700">Valor enviado</label><span style="font-size:16px;font-weight:400">${fmtV(o)}</span></div>
-      <div><label style="font-weight:700">Moeda</label><span style="font-size:15px;font-weight:400">${o.moeda||'—'}</span></div>
-      <div><label style="font-weight:700">Data Limite Wire</label><span style="font-size:15px;font-weight:400${ws&&ws.cls?';color:#A32D2D':''}">${fmtD(o.wire)||'—'}${ws?` <span class="badge ${ws.badge}">${ws.lbl}</span>`:''}</span></div>
+      <div><label style="font-weight:700">Valor enviado</label><span style="font-size:16px">${fmtV(o)}</span></div>
+      <div><label style="font-weight:700">Moeda</label><span style="font-size:15px">${o.moeda||'—'}</span></div>
+      <div><label style="font-weight:700">Data Limite Wire</label><span style="font-size:15px${ws&&ws.cls?';color:#A32D2D':''}">${fmtD(o.wire)||'—'}${ws?` <span class="badge ${ws.badge}">${ws.lbl}</span>`:''}</span></div>
       <div><label style="font-weight:700">In-Kind</label><span class="badge ${o.inKind?'b-ik':'b-no'}">${o.inKind?'Sim':'Não'}</span></div>
     </div>
     <div style="border-top:1px solid #e0e0e0;padding-top:12px">
@@ -389,10 +358,10 @@ function vDetail(){
         <input type="number" style="max-width:220px" placeholder="Digite o valor confirmado..." value="${o.valorConfirmado||''}" onchange="updConfirmado('${o.id}',this.value)">
         ${o.valorConfirmado?`<span style="font-size:15px;font-weight:500">${fmtNum(o.valorConfirmado,o.moeda)}</span>`:''}
       </div>
-      ${div?`<div class="div-alert">⚠ Divergência detectada: enviado ${fmtV(o)} · confirmado ${fmtNum(o.valorConfirmado,o.moeda)}</div>`:''}
+      ${div?`<div class="div-alert">⚠ Divergência: enviado ${fmtV(o)} · confirmado ${fmtNum(o.valorConfirmado,o.moeda)}</div>`:''}
     </div>
   </div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px" class="no-print">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
     <span style="font-size:14px;font-weight:700">${dn}/${STEPS.length} etapas concluídas · ${p}%</span>
     <div style="display:flex;gap:6px;align-items:center">
       <button class="btn sm" onclick="navStep(${f-1})" ${f===0?'disabled':''}>←</button>
@@ -407,22 +376,21 @@ function vDetail(){
   for(let i=0;i<STEPS.length;i++){
     const s=STEPS[i];const st=o.steps[i];
     const dist=Math.abs(i-f);const isActive=dist===0;
-    let istyle='';
-    if(dist===1)istyle='transform:scale(0.985);opacity:0.72;filter:blur(0.6px);';
-    else if(dist===2)istyle='transform:scale(0.97);opacity:0.5;filter:blur(1.2px);';
-    else if(dist>=3)istyle='transform:scale(0.96);opacity:0.35;filter:blur(2px);';
-    let cls='step-item'+(isActive?' s-active':'')+(st.done?' s-done':'');
-    h+=`<div class="${cls}" style="${istyle}" onclick="setFocus(${i})">
+    let ist='';
+    if(dist===1)ist='transform:scale(0.985);opacity:0.72;filter:blur(0.6px);';
+    else if(dist===2)ist='transform:scale(0.97);opacity:0.5;filter:blur(1.2px);';
+    else if(dist>=3)ist='transform:scale(0.96);opacity:0.35;filter:blur(2px);';
+    h+=`<div class="step-item${isActive?' s-active':''}${st.done?' s-done':''}" style="${ist}" onclick="setFocus(${i})">
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div class="snum${st.done?' dn':''}">${s.n}</div>
         <div style="flex:1">
           <div style="display:flex;align-items:flex-start;gap:8px">
-            <input type="checkbox" style="margin-top:3px" ${st.done?'checked':''} onchange="togStep('${o.id}',${i},this.checked)" onclick="event.stopPropagation()" class="no-print">
+            <input type="checkbox" style="margin-top:3px" ${st.done?'checked':''} onchange="togStep('${o.id}',${i},this.checked)" onclick="event.stopPropagation()">
             <span style="font-size:${isActive?'15px':'14px'};font-weight:${isActive?'600':'400'};line-height:1.5;${st.done?'text-decoration:line-through;color:#888':''}">${e(s.lbl)}</span>
           </div>
           <div style="font-size:12px;color:#444;margin-top:4px;margin-left:24px"><span class="tag">${s.resp}</span>${e(s.prazo)}</div>
-          ${st.obs?`<div style="font-size:12px;color:#555;margin-top:4px;margin-left:24px;font-style:italic">${e(st.obs)}</div>`:''}
-          ${isActive?`<input type="text" class="no-print" style="margin-top:8px;font-size:13px;padding:6px 10px;margin-left:24px;width:calc(100% - 24px)" placeholder="Observação..." value="${e(st.obs||'')}" data-oid="${o.id}" data-idx="${i}" onchange="updObs(this)" onclick="event.stopPropagation()">`:``}
+          ${st.obs&&!isActive?`<div style="font-size:12px;color:#555;margin-top:4px;margin-left:24px;font-style:italic">${e(st.obs)}</div>`:''}
+          ${isActive?`<input type="text" style="margin-top:8px;font-size:13px;padding:6px 10px;margin-left:24px;width:calc(100% - 24px)" placeholder="Observação..." value="${e(st.obs||'')}" data-oid="${o.id}" data-idx="${i}" onchange="updObs(this)" onclick="event.stopPropagation()">`:``}
         </div>
       </div>
     </div>`;
@@ -448,8 +416,7 @@ function vFunds(){
     }
     h+=`</div><button class="btn sm" onclick="addF('${key}')">+ Adicionar</button></div>`;
   }
-  h+=`</div>
-  <div class="card" style="border-top:2px solid #185FA5">
+  h+=`</div><div class="card" style="border-top:2px solid #185FA5">
     <div style="font-weight:700;color:#0C447C;margin-bottom:12px;font-size:15px">Gestoras / Administradoras</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">`;
   const admins=S.funds.admins||[];
@@ -457,13 +424,11 @@ function vFunds(){
     h+=`<div style="display:flex;gap:6px"><input type="text" value="${e(admins[i])}" onchange="editF('admins',${i},this.value)">
       <button class="btn sm" style="flex-shrink:0" onclick="rmvF('admins',${i})">×</button></div>`;
   }
-  h+=`</div><button class="btn sm" onclick="addF('admins')">+ Adicionar</button>
-  </div>
+  h+=`</div><button class="btn sm" onclick="addF('admins')">+ Adicionar</button></div>
   <p style="font-size:13px;color:#555;margin-top:1rem">Edite diretamente. Salvo automaticamente.</p>`;
   return h;
 }
 
-// Actions
 function go(v){S.view=v;S.showForm=false;R();}
 function setFilter(k,v){S.filters[k]=v;R();}
 function clearFilters(){S.filters={fiv:'',tipo:'',status:''};R();}
@@ -485,22 +450,8 @@ function togIK(){
 }
 function setFocus(i){S.focusStep=i;R();}
 function navStep(i){if(i>=0&&i<STEPS.length){S.focusStep=i;R();}}
-
 function createOrd(){
-  const o={
-    id:uid(),
-    fi:document.getElementById('f-fi').value,
-    fiv:document.getElementById('f-fiv').value,
-    gestora:document.getElementById('f-gest').value.trim(),
-    tipo:document.getElementById('f-tipo').value,
-    valor:parseFloat(document.getElementById('f-val').value)||0,
-    moeda:document.getElementById('f-moe').value,
-    wire:document.getElementById('f-wire').value||null,
-    inKind:_ik,
-    valorConfirmado:null,
-    steps:STEPS.map(()=>({done:false,obs:''})),
-    createdAt:new Date().toISOString(),
-  };
+  const o={id:uid(),fi:document.getElementById('f-fi').value,fiv:document.getElementById('f-fiv').value,gestora:document.getElementById('f-gest').value.trim(),tipo:document.getElementById('f-tipo').value,valor:parseFloat(document.getElementById('f-val').value)||0,moeda:document.getElementById('f-moe').value,wire:document.getElementById('f-wire').value||null,inKind:_ik,valorConfirmado:null,steps:STEPS.map(()=>({done:false,obs:''})),createdAt:new Date().toISOString()};
   S.orders.unshift(o);S.showForm=false;saveO();R();
 }
 function delOrd(id){S.orders=S.orders.filter(o=>o.id!==id);S.view='orders';saveO();R();}
@@ -512,31 +463,30 @@ function addF(t){if(!S.funds[t])S.funds[t]=[];S.funds[t].push('');saveF();R();}
 function editF(t,i,v){S.funds[t][i]=v;saveF();}
 function rmvF(t,i){S.funds[t].splice(i,1);saveF();R();}
 
-function printOrd(){window.print();}
-
 function exportXLSX(){
-  loadXLSX(()=>{
-    const rows=S.orders.map(o=>({
-      'Fundo Investidor':o.fi||'',
-      'Fundo Investido':o.fiv||'',
-      'Gestora/Admin':o.gestora||'',
-      'Tipo':o.tipo||'',
-      'Valor':o.valor||0,
-      'Moeda':o.moeda||'',
-      'Data Limite Wire':fmtD(o.wire)||'',
-      'In-Kind':o.inKind?'Sim':'Não',
-      'Valor Confirmado':o.valorConfirmado||'',
-      'Etapas Concluídas':o.steps.filter(s=>s.done).length,
-      'Total Etapas':STEPS.length,
-      'Progresso %':pct(o),
-      'Status':status(o),
+  var btn=document.querySelector('.btn.am');
+  if(btn){btn.textContent='Carregando...';btn.disabled=true;}
+  var s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=function(){
+    if(btn){btn.textContent='Exportar XLSX';btn.disabled=false;}
+    var rows=S.orders.map(function(o){return{
+      'Fundo Investidor':o.fi||'','Fundo Investido':o.fiv||'','Gestora/Admin':o.gestora||'','Tipo':o.tipo||'',
+      'Valor':o.valor||0,'Moeda':o.moeda||'','Data Limite Wire':fmtD(o.wire)||'','In-Kind':o.inKind?'Sim':'Não',
+      'Valor Confirmado':o.valorConfirmado||'','Etapas Concluídas':o.steps.filter(function(s){return s.done;}).length,
+      'Total Etapas':STEPS.length,'Progresso %':pct(o),'Status':status(o),
       'Criado em':o.createdAt?new Date(o.createdAt).toLocaleDateString('pt-BR'):'',
-    }));
-    const ws=XLSX.utils.json_to_sheet(rows);
-    const wb=XLSX.utils.book_new();
+    };});
+    var ws=XLSX.utils.json_to_sheet(rows);
+    var wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,'Ordens',ws);
     XLSX.writeFile(wb,'SubDoc_Ordens_'+new Date().toISOString().slice(0,10)+'.xlsx');
-  });
+  };
+  s.onerror=function(){
+    if(btn){btn.textContent='Exportar XLSX';btn.disabled=false;}
+    alert('Erro ao carregar biblioteca. Verifique sua conexão e tente novamente.');
+  };
+  document.head.appendChild(s);
 }
 
 init();

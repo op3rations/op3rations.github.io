@@ -162,10 +162,20 @@ function showErr(){var b=document.getElementById('err-bar');if(b){b.className='e
 function init(){
   S.loading=true;
   if(_refreshTimer){clearInterval(_refreshTimer);_refreshTimer=null;}
+  R();
   fetch(SCRIPT_URL+'?action=getData&t='+Date.now())
     .then(function(r){return r.text();})
-    .then(function(txt){var d=JSON.parse(txt);S.orders=d.orders||[];S.funds=d.funds||clone(DF_FUNDS);S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);})
-    .catch(function(){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||clone(DF_FUNDS);S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
+    .then(function(txt){
+      try{var d=JSON.parse(txt);S.orders=d.orders||[];S.funds=d.funds||clone(DF_FUNDS);}catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||clone(DF_FUNDS);}
+      S.loading=false;R();
+      _refreshTimer=setInterval(autoRefresh,2000);
+    })
+    .catch(function(){
+      S.orders=lsLoad('sd_orders')||[];
+      S.funds=lsLoad('sd_funds')||clone(DF_FUNDS);
+      S.loading=false;R();
+      _refreshTimer=setInterval(autoRefresh,2000);
+    });
 }
 function autoRefresh(){
   if(S.showForm||S.editId)return;
@@ -210,14 +220,19 @@ function R(){
   var root=document.getElementById('root');
   if(!root)return;
   if(S.loading){root.innerHTML='<div style="text-align:center;padding:4rem;color:#626367"><div style="font-size:14px;color:#F15D1B;font-weight:600">Carregando dados...</div></div>';return;}
-  var h='<div class="nav">'+LOGO(56,22);
-  h+='<button class="nb'+(S.view==='orders'?' active':'')+'" onclick="go(\'orders\')">Ordens</button>';
-  h+='<button class="nb'+(S.view==='funds'?' active':'')+'" onclick="go(\'funds\')">Fundos</button>';
-  h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
-  if(S.view==='orders')h+=vOrders();
-  else if(S.view==='detail')h+=vDetail();
-  else h+=vFunds();
-  root.innerHTML=h;
+  try{
+    var h='<div class="nav">'+LOGO(56,22);
+    h+='<button class="nb'+(S.view==='orders'?' active':'')+'" onclick="go(\'orders\')">Ordens</button>';
+    h+='<button class="nb'+(S.view==='funds'?' active':'')+'" onclick="go(\'funds\')">Fundos</button>';
+    h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
+    if(S.view==='orders')h+=vOrders();
+    else if(S.view==='detail')h+=vDetail();
+    else h+=vFunds();
+    root.innerHTML=h;
+  }catch(err){
+    root.innerHTML='<div style="padding:2rem;color:#c0392b;background:#FCEBEB;border-radius:8px;margin:1rem">Erro ao renderizar: '+err.message+'<br><br><button class="btn p" onclick="go(\'orders\')">Tentar novamente</button></div>';
+    console.error('Render error:',err);
+  }
 }
 
 // ─── ORDERS VIEW ──────────────────────────────────────────

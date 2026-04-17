@@ -111,7 +111,7 @@ async function init(){
     S.loading=false;R();return;
   }
   try{
-    const resp=await fetch(SCRIPT_URL+'?action=getData');
+    const resp=await fetch(SCRIPT_URL+'?action=getData&t='+Date.now());
     const data=JSON.parse(await resp.text());
     S.orders=data.orders||[];
     S.funds=data.funds||{investidor:[...DF_INV],investido:[...DF_IVD],admins:[...ADMINS_DEF]};
@@ -120,6 +120,7 @@ async function init(){
     S.funds=lsLoad('sd_funds')||{investidor:[...DF_INV],investido:[...DF_IVD],admins:[...ADMINS_DEF]};
   }
   S.loading=false;R();
+  if(!USE_LOCAL)setInterval(autoRefresh,2000);
 }
 
 function saveO(){
@@ -426,6 +427,21 @@ function vFunds(){
   h+=`</div><button class="btn sm" onclick="addF('admins')">+ Adicionar</button></div>
   <p style="font-size:13px;color:#555;margin-top:1rem">Edite diretamente. Salvo automaticamente.</p>`;
   return h;
+}
+
+async function autoRefresh(){
+  if(S.showForm)return;
+  try{
+    const resp=await fetch(SCRIPT_URL+'?action=getData&t='+Date.now());
+    const data=JSON.parse(await resp.text());
+    const newOrders=JSON.stringify(data.orders||[]);
+    const newFunds=JSON.stringify(data.funds||{});
+    if(newOrders!==JSON.stringify(S.orders)||newFunds!==JSON.stringify(S.funds)){
+      S.orders=data.orders||[];
+      S.funds=data.funds||{investidor:[...DF_INV],investido:[...DF_IVD],admins:[...ADMINS_DEF]};
+      R();
+    }
+  }catch(e){}
 }
 
 function go(v){S.view=v;S.showForm=false;R();}

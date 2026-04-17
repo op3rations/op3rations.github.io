@@ -102,7 +102,13 @@ var NAME_MAP = {'felipe.ferreira@subdoc.com':'Felipe Ferreira','paulo.parisi@sub
 var currentUser = null;
 
 function showLogin(){document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
-function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';}
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  var app=document.getElementById('app');
+  app.style.display='block';
+  var root=document.getElementById('root');
+  if(root)root.innerHTML='<div style="text-align:center;padding:4rem;color:#626367"><div style="font-size:14px;color:#F15D1B;font-weight:600">Autenticado. Carregando...</div></div>';
+}
 
 document.getElementById('login-btn').onclick = function(){
   var u=(document.getElementById('l-user').value||'').trim().toLowerCase();
@@ -113,12 +119,23 @@ document.getElementById('login-btn').onclick = function(){
   if(!email){document.getElementById('login-err').style.display='block';return;}
   btn.textContent='Entrando...';btn.disabled=true;
   auth.signInWithEmailAndPassword(email,p)
-    .then(function(c){currentUser=NAME_MAP[c.user.email]||c.user.email;showApp();btn.textContent='Entrar \u2192';btn.disabled=false;init();})
+    .then(function(c){
+      currentUser=NAME_MAP[c.user.email]||c.user.email;
+      showApp();
+      btn.textContent='Entrar \u2192';btn.disabled=false;
+      setTimeout(function(){init();},200);
+    })
     .catch(function(){document.getElementById('login-err').style.display='block';document.getElementById('l-pass').value='';btn.textContent='Entrar \u2192';btn.disabled=false;});
 };
 document.addEventListener('keydown',function(e){if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')document.getElementById('login-btn').onclick();});
 function logout(){auth.signOut().then(function(){currentUser=null;showLogin();});}
-auth.onAuthStateChanged(function(user){if(user){currentUser=NAME_MAP[user.email]||user.email;showApp();init();}});
+auth.onAuthStateChanged(function(user){
+  if(user){
+    currentUser=NAME_MAP[user.email]||user.email;
+    showApp();
+    setTimeout(function(){init();},200);
+  }
+});
 
 // ─── CONFIG ───────────────────────────────────────────────
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbyAhI-jMXrH8gBOYvHgugrrRw2gdwlRsDAWu014WnJhPyKBcqZ0UG9fHfHnOFOyg9xVVw/exec';

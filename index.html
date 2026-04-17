@@ -79,9 +79,17 @@ label{font-size:11px;color:#185FA5;font-weight:700;text-transform:uppercase;lett
 </div>
 <div class="save-bar" id="save-bar">Salvando...</div>
 <div class="err-bar" id="err-bar">Erro ao salvar.</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxBDTRiw8iPVlxRhYFRWsLa6ryCb7svRTYjOKxTKM33u4HjlvM1HTI61fabcHJ0PEiuAg/exec';
+function loadXLSX(cb){
+  if(typeof XLSX!=='undefined'){cb();return;}
+  var s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=cb;
+  s.onerror=()=>alert('Não foi possível carregar a biblioteca de exportação. Verifique sua conexão.');
+  document.head.appendChild(s);
+}
+
+const SCRIPT_URL='COLE_AQUI_A_URL_DO_APPS_SCRIPT';
 
 const STEPS=[
   {n:1,lbl:'Confirmar com gestão o valor do aporte',resp:'Operações',prazo:'D+0'},
@@ -507,27 +515,28 @@ function rmvF(t,i){S.funds[t].splice(i,1);saveF();R();}
 function printOrd(){window.print();}
 
 function exportXLSX(){
-  if(typeof XLSX==='undefined'){alert('Biblioteca XLSX não carregada. Tente novamente.');return;}
-  const rows=S.orders.map(o=>({
-    'Fundo Investidor':o.fi||'',
-    'Fundo Investido':o.fiv||'',
-    'Gestora/Admin':o.gestora||'',
-    'Tipo':o.tipo||'',
-    'Valor':o.valor||0,
-    'Moeda':o.moeda||'',
-    'Data Limite Wire':fmtD(o.wire)||'',
-    'In-Kind':o.inKind?'Sim':'Não',
-    'Valor Confirmado':o.valorConfirmado||'',
-    'Etapas Concluídas':o.steps.filter(s=>s.done).length,
-    'Total Etapas':STEPS.length,
-    'Progresso %':pct(o),
-    'Status':status(o),
-    'Criado em':o.createdAt?new Date(o.createdAt).toLocaleDateString('pt-BR'):'',
-  }));
-  const ws=XLSX.utils.json_to_sheet(rows);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,'Ordens',ws);
-  XLSX.writeFile(wb,'SubDoc_Ordens_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  loadXLSX(()=>{
+    const rows=S.orders.map(o=>({
+      'Fundo Investidor':o.fi||'',
+      'Fundo Investido':o.fiv||'',
+      'Gestora/Admin':o.gestora||'',
+      'Tipo':o.tipo||'',
+      'Valor':o.valor||0,
+      'Moeda':o.moeda||'',
+      'Data Limite Wire':fmtD(o.wire)||'',
+      'In-Kind':o.inKind?'Sim':'Não',
+      'Valor Confirmado':o.valorConfirmado||'',
+      'Etapas Concluídas':o.steps.filter(s=>s.done).length,
+      'Total Etapas':STEPS.length,
+      'Progresso %':pct(o),
+      'Status':status(o),
+      'Criado em':o.createdAt?new Date(o.createdAt).toLocaleDateString('pt-BR'):'',
+    }));
+    const ws=XLSX.utils.json_to_sheet(rows);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,'Ordens',ws);
+    XLSX.writeFile(wb,'SubDoc_Ordens_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  });
 }
 
 init();

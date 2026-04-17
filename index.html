@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel de Subscription Documents</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;font-size:16px;line-height:1.6;background:#f5f5f3;padding:1rem}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.wrap{max-width:900px;margin:0 auto;background:#fff;border-radius:12px;padding:1.5rem;min-height:100vh}
+.nav{display:flex;gap:6px;padding-bottom:12px;border-bottom:1px solid #e0e0e0;margin-bottom:1.25rem}
+.nb{background:none;border:none;padding:6px 16px;cursor:pointer;border-radius:8px;color:#555;font-size:14px}
+.nb.active{background:#E6F1FB;color:#0C447C;font-weight:600}
+.nb:hover:not(.active){background:#f0f0f0}
+.btn{padding:7px 16px;border:1px solid #ccc;background:#fff;border-radius:8px;cursor:pointer;font-size:14px;color:#1a1a1a}
+.btn:hover{background:#f0f0f0}
+.btn.p{background:#185FA5;color:#fff;border-color:transparent;font-size:14px}
+.btn.p:hover{background:#0C447C}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.dr{color:#c0392b;border-color:#e0b0b0}
+.card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem}
+.pb{height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px;background:#185FA5;transition:width .3s}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600}
+.b-ok{background:#EAF3DE;color:#2d7a2d}
+.b-warn{background:#FAEEDA;color:#633806}
+.b-info{background:#E6F1FB;color:#0C447C}
+.b-ik{background:#E1F5EE;color:#0F6E56}
+.b-no{background:#f0f0f0;color:#555}
+input,select{font-family:inherit;font-size:15px;font-weight:500;color:#1a1a1a;background:#fff;border:1px solid #ccc;border-radius:8px;padding:9px 12px;width:100%}
+input[type=checkbox]{width:auto;accent-color:#185FA5;transform:scale(1.2)}
+input:focus,select:focus{outline:none;box-shadow:0 0 0 2px #B5D4F4;border-color:#185FA5}
+label{font-size:11px;color:#185FA5;font-weight:700;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:5px}
+.fg{margin-bottom:12px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.ifrm{background:#f7f9fc;border:2px solid #185FA5;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.tog-wrap{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;user-select:none}
+.tog{width:36px;height:20px;background:#ccc;border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
+.tog.on{background:#185FA5}
+.tog::after{content:'';position:absolute;width:14px;height:14px;background:white;border-radius:50%;top:3px;left:3px;transition:left .2s}
+.tog.on::after{left:19px}
+.step-item{padding:14px 16px;border-radius:12px;cursor:pointer;transition:transform .25s,opacity .25s,filter .25s;margin-bottom:8px;border:1px solid #e0e0e0;background:#fff}
+.step-item.s-active{border:1px solid #B5D4F4;border-left:3px solid #185FA5}
+.step-item.s-done{background:#EAF3DE;border-color:#C0DD97}
+.snum{width:26px;height:26px;border-radius:50%;background:#E6F1FB;color:#0C447C;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.snum.dn{background:#EAF3DE;color:#2d7a2d}
+.tag{display:inline-flex;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#E6F1FB;color:#0C447C;margin-right:4px}
+.ord-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem;cursor:pointer;transition:border-color .18s}
+.ord-card:hover{border-color:#B5D4F4;border-left:3px solid #185FA5}
+</style>
+</head>
+<body>
+<h2 class="sr-only">Painel de Subscription Documents — Operações Offshore</h2>
+<div class="wrap">
+  <div id="root"></div>
+</div>
+<script>
+const STEPS=[
+  {n:1,lbl:'Confirmar com gestão o valor do aporte',resp:'Operações',prazo:'D+0'},
+  {n:2,lbl:'Confirmar data limite de envio wire e subdoc assinado com a casa',resp:'Operações',prazo:'D+0'},
+  {n:3,lbl:'Lançar no TERA APP',resp:'Gestão',prazo:'D+0'},
+  {n:4,lbl:'Pedir documentos para a casa',resp:'Operações',prazo:'D+0'},
+  {n:5,lbl:'Descobrir data de liquidação de resgate com a casa / Atualizar data no TeraApp',resp:'Operações',prazo:'Assim que confirmar data e valor'},
+  {n:6,lbl:'Preencher subdoc e pedir validação contraparte',resp:'Operações',prazo:'SLA 3 dias úteis'},
+  {n:7,lbl:'Checar cadastro na CANOE / Solicitar cadastro e enviar e-mail da CANOE junto com OPS',resp:'Operações',prazo:'SLA 3 dias úteis'},
+  {n:8,lbl:'Confirmar caixa, preparar carta wire e enviar para assinatura',resp:'Operações',prazo:'SLA 3 dias úteis'},
+  {n:9,lbl:'Enviar documento e wire para RI — assinatura do cliente (confirmar se via Docusign)',resp:'Operações',prazo:'SLA 3 dias úteis'},
+  {n:10,lbl:'Enviar documento assinado para a casa',resp:'Operações',prazo:'No mesmo dia que recebermos do RI'},
+  {n:11,lbl:'Enviar wire instructions assinada para o banco do cliente processar',resp:'Operações',prazo:'Assim que definida a data internamente'},
+  {n:12,lbl:'Pedir confirmação da contraparte sobre finalização do processo',resp:'Operações',prazo:'Assim que enviado a wire'},
+  {n:13,lbl:'Lançar ponta ativo/passivo no Addepar',resp:'Operações',prazo:'Assim que finalizado'},
+  {n:14,lbl:'Lançar no LOTE45 (se TERA HF, TERA CORE BONDS ou TERA TREND FOLLOWING)',resp:'Operações',prazo:'Assim que finalizado'},
+  {n:15,lbl:'Salvar documentação na rede (versão assinada)',resp:'Operações',prazo:'Assim que finalizado'},
+  {n:16,lbl:'Avisar administrador do fundo sobre a movimentação',resp:'Operações',prazo:'Assim que finalizado'},
+  {n:17,lbl:'Avisar gestão sobre a finalização do processo',resp:'Operações',prazo:'Assim que tiver confirmação da casa'},
+];
+const ADMINS=['Apex Group','Alter Domus','Augentius','Aztec Group','BNY Mellon','Carey Olsen','Citi Fund Services','Citco','Conyers','Deutsche Bank','Elysium Fund Management','HedgeServ','HSBC Securities Services','Intertrust Group','IQ EQ','JPMorgan Chase','Mainstream Group','Maples Group','Mourant','NAV Consulting','Northern Trust','Ogier','SEI Investments','SS&C Technologies','State Street','TMF Group','Trident Trust','UBS Fund Services','Vistra','Walkers Fund Services'];
+const HFUNDS=['AQR Capital Management','Anchorage Capital Group','Appaloosa Management','Balyasny Asset Management','Baupost Group','Brevan Howard','Bridgewater Associates','Capula Investment Management','Citadel','Coatue Management','D.E. Shaw','Elliott Management','Glenview Capital Management','Graham Capital Management','Greenlight Capital','Jana Partners','King Street Capital','Lone Pine Capital','Man Group','Marshall Wace','Millennium Management','Pershing Square Capital Management','Point72 Asset Management','Renaissance Technologies','Sculptor Capital Management','Third Point','Tiger Global Management','Two Sigma','Viking Global Investors','Winton Group'];
+const DF=['TERA HF','TERA CORE BONDS SP','TERA TREND FOLLOWING SP','TERA GLOBAL SPC'];
+
+const load=k=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch{return null;}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
+
+let S={
+  view:'orders',
+  orders:load('sd_orders')||[],
+  funds:load('sd_funds')||{investidor:[...DF],investido:[...DF]},
+  selId:null,showForm:false,fd:{},focusStep:0
+};
+let _ik=false;
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const pct=o=>Math.round(o.steps.filter(s=>s.done).length/STEPS.length*100);
+const status=o=>{const p=pct(o);return p===100?'Concluído':p===0?'Não iniciado':'Em andamento';};
+const bcls=o=>{const p=pct(o);return p===100?'b-ok':p===0?'b-info':'b-warn';};
+const fmtV=o=>{if(!o.valor)return'—';try{return new Intl.NumberFormat('pt-BR',{style:'currency',currency:o.moeda||'USD',maximumFractionDigits:0}).format(o.valor);}catch{return o.valor;}};
+const e=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const saveO=()=>save('sd_orders',S.orders);
+const saveF=()=>save('sd_funds',S.funds);
+
+const DL=()=>`<datalist id="gest-dl">${ADMINS.map(g=>`<option value="${e(g)}">`).join('')}${HFUNDS.map(g=>`<option value="${e(g)}">`).join('')}</datalist>`;
+
+function R(){
+  const root=document.getElementById('root');if(!root)return;
+  let h=`<div class="nav">
+    <button class="nb${S.view!=='funds'?' active':''}" onclick="go('orders')">Ordens</button>
+    <button class="nb${S.view==='funds'?' active':''}" onclick="go('funds')">Fundos</button>
+  </div>`;
+  if(S.view==='orders')h+=vOrders();
+  else if(S.view==='detail')h+=vDetail();
+  else h+=vFunds();
+  root.innerHTML=h;
+}
+
+function vOrders(){
+  const os=S.orders;
+  const concl=os.filter(o=>pct(o)===100).length;
+  const and=os.filter(o=>pct(o)>0&&pct(o)<100).length;
+  let h=`<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">
+    <div>
+      <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#185FA5;font-weight:700;margin-bottom:4px">Operações Offshore</div>
+      <h1 style="font-size:26px;font-weight:700">Painel de Subscription Documents</h1>
+    </div>
+    <button class="btn p" onclick="togForm()">+ Nova ordem</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:1.5rem">
+    <div style="background:#E6F1FB;border-radius:8px;padding:.875rem;border:1px solid #B5D4F4">
+      <div style="font-size:11px;color:#185FA5;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:700">Total de ordens</div>
+      <div style="font-size:24px;font-weight:700;color:#0C447C">${os.length}</div>
+    </div>
+    <div style="background:#FAEEDA;border-radius:8px;padding:.875rem;border:1px solid #FAC775">
+      <div style="font-size:11px;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:700">Em andamento</div>
+      <div style="font-size:24px;font-weight:700;color:#633806">${and}</div>
+    </div>
+    <div style="background:#EAF3DE;border-radius:8px;padding:.875rem;border:1px solid #C0DD97">
+      <div style="font-size:11px;color:#2d7a2d;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:700">Concluídas</div>
+      <div style="font-size:24px;font-weight:700;color:#2d7a2d">${concl}</div>
+    </div>
+  </div>`;
+  if(S.showForm)h+=rForm();
+  if(os.length===0){
+    h+=`<div style="text-align:center;padding:3rem 1rem;color:#555;border:1px dashed #ccc;border-radius:12px">Nenhuma ordem cadastrada ainda.<br>Clique em <strong style="color:#185FA5">+ Nova ordem</strong> para começar.</div>`;
+  }else{
+    h+=`<div style="display:flex;flex-direction:column;gap:8px">`;
+    for(const o of os){
+      const p=pct(o);const dn=o.steps.filter(s=>s.done).length;
+      h+=`<div class="ord-card" onclick="openDet('${o.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div style="font-weight:600;margin-bottom:3px;font-size:15px">${e(o.fi)||'—'} <span style="color:#185FA5">→</span> ${e(o.fiv)||'—'}</div>
+            <div style="font-size:13px;color:#444;display:flex;align-items:center;gap:6px">${e(o.gestora)||'—'}${o.inKind?' <span class="badge b-ik">In-Kind</span>':''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span class="badge ${bcls(o)}">${status(o)}</span>
+            <span style="font-size:13px;color:#444">${e(o.tipo)||''}</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#444;margin-bottom:6px">
+          <span style="font-weight:600">${fmtV(o)}</span>
+          <span>${dn}/${STEPS.length} etapas · ${p}%</span>
+        </div>
+        <div class="pb"><div class="pf" style="width:${p}%"></div></div>
+      </div>`;
+    }
+    h+=`</div>`;
+  }
+  return h;
+}
+
+function rForm(){
+  const d=S.fd;const fi=S.funds.investidor;const fiv=S.funds.investido;
+  return`<div class="ifrm" id="new-order-form">
+    ${DL()}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <div>
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#185FA5;font-weight:700;margin-bottom:2px">Nova ordem</div>
+        <span style="font-weight:700;font-size:16px">Subscription Document</span>
+      </div>
+      <button class="btn sm" onclick="togForm()">Cancelar</button>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Fundo investidor</label><select id="f-fi">
+        <option value="">Selecione...</option>
+        ${fi.map(f=>`<option value="${e(f)}">${e(f)}</option>`).join('')}
+      </select></div>
+      <div class="fg"><label>Fundo investido</label><select id="f-fiv">
+        <option value="">Selecione...</option>
+        ${fiv.map(f=>`<option value="${e(f)}">${e(f)}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="fg"><label>Gestora / Administradora do fundo investido</label>
+      <input type="text" id="f-gest" list="gest-dl" value="${e(d.gestora||'')}" placeholder="Selecione ou escreva o nome...">
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Tipo</label><select id="f-tipo">
+        <option value="Subscription">Subscription</option>
+        <option value="Redemption">Redemption</option>
+      </select></div>
+      <div class="fg"><label>Moeda</label><select id="f-moe">
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="BRL">BRL</option>
+      </select></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Valor</label><input type="number" id="f-val" placeholder="0" min="0"></div>
+      <div class="fg" style="display:flex;flex-direction:column;justify-content:flex-end">
+        <label>In-Kind</label>
+        <div class="tog-wrap" onclick="togIK()" id="ik-wrap">
+          <div class="tog${_ik?' on':''}" id="ik-tog"></div>
+          <span style="font-size:14px" id="ik-lbl">${_ik?'Sim':'Não'}</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:4px">
+      <button class="btn p" style="padding:10px 28px;font-size:15px;font-weight:600" onclick="createOrd()">Criar ordem →</button>
+    </div>
+  </div>`;
+}
+
+function vDetail(){
+  const o=S.orders.find(x=>x.id===S.selId);
+  if(!o){go('orders');return'';}
+  const dn=o.steps.filter(s=>s.done).length;const p=pct(o);const f=S.focusStep;
+  let h=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+    <button class="btn sm" onclick="go('orders')">← Voltar</button>
+    <div style="flex:1">
+      <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#185FA5;margin-bottom:2px;font-weight:700">${e(o.tipo)||'—'} · ${e(o.gestora)||'—'}</div>
+      <h1 style="font-size:16px;font-weight:700">${e(o.fi)||'—'} <span style="color:#185FA5">→</span> ${e(o.fiv)||'—'}</h1>
+    </div>
+    <button class="btn sm dr" onclick="delOrd('${o.id}')">Excluir</button>
+  </div>
+  <div class="card" style="margin-bottom:1rem;border-top:2px solid #185FA5">
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px">
+      <div><label style="font-weight:700">Fundo investidor</label><span style="font-size:16px;font-weight:400">${e(o.fi)||'—'}</span></div>
+      <div><label style="font-weight:700">Fundo investido</label><span style="font-size:16px;font-weight:400">${e(o.fiv)||'—'}</span></div>
+      <div><label style="font-weight:700">Gestora / Admin.</label><span style="font-size:15px;font-weight:400">${e(o.gestora)||'—'}</span></div>
+      <div><label style="font-weight:700">Tipo</label><span style="font-size:15px;font-weight:400">${e(o.tipo)||'—'}</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+      <div><label style="font-weight:700">Valor</label><span style="font-size:17px;font-weight:400">${fmtV(o)}</span></div>
+      <div><label style="font-weight:700">Moeda</label><span style="font-size:15px;font-weight:400">${o.moeda||'—'}</span></div>
+      <div><label style="font-weight:700">In-Kind</label><span class="badge ${o.inKind?'b-ik':'b-no'}">${o.inKind?'Sim':'Não'}</span></div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <span style="font-size:14px;font-weight:700">${dn}/${STEPS.length} etapas concluídas · ${p}%</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn sm" onclick="navStep(${f-1})" ${f===0?'disabled':''}>←</button>
+      <span style="font-size:13px;padding:0 4px;font-weight:700">Etapa ${f+1} de ${STEPS.length}</span>
+      <button class="btn sm" onclick="navStep(${f+1})" ${f===STEPS.length-1?'disabled':''}>→</button>
+      <button class="btn sm" style="font-weight:700" onclick="resetSt('${o.id}')">Resetar</button>
+    </div>
+  </div>
+  <div class="pb" style="margin-bottom:1.25rem"><div class="pf" id="mpb" style="width:${p}%"></div></div>
+  <div>`;
+
+  for(let i=0;i<STEPS.length;i++){
+    const s=STEPS[i];const st=o.steps[i];
+    const dist=Math.abs(i-f);const isActive=dist===0;
+    let istyle='';
+    if(dist===1)istyle='transform:scale(0.985);opacity:0.72;filter:blur(0.6px);';
+    else if(dist===2)istyle='transform:scale(0.97);opacity:0.5;filter:blur(1.2px);';
+    else if(dist>=3)istyle='transform:scale(0.96);opacity:0.35;filter:blur(2px);';
+    let cls='step-item'+(isActive?' s-active':'')+(st.done?' s-done':'');
+    h+=`<div class="${cls}" style="${istyle}" onclick="setFocus(${i})">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div class="snum${st.done?' dn':''}">${s.n}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:flex-start;gap:8px">
+            <input type="checkbox" style="margin-top:3px" ${st.done?'checked':''} onchange="togStep('${o.id}',${i},this.checked)" onclick="event.stopPropagation()">
+            <span style="font-size:${isActive?'15px':'14px'};font-weight:${isActive?'600':'400'};line-height:1.5;${st.done?'text-decoration:line-through;color:#888':''}">${e(s.lbl)}</span>
+          </div>
+          <div style="font-size:12px;color:#444;margin-top:4px;margin-left:24px"><span class="tag">${s.resp}</span>${e(s.prazo)}</div>
+          ${isActive?`<input type="text" style="margin-top:8px;font-size:13px;padding:6px 10px;margin-left:24px;width:calc(100% - 24px)" placeholder="Observação..." value="${e(st.obs||'')}" data-oid="${o.id}" data-idx="${i}" onchange="updObs(this)" onclick="event.stopPropagation()">`:``}
+        </div>
+      </div>
+    </div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
+function vFunds(){
+  let h=`<div style="margin-bottom:1.5rem">
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#185FA5;font-weight:700;margin-bottom:4px">Configurações</div>
+    <h1 style="font-size:22px;font-weight:700">Gerenciar fundos</h1>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">`;
+  for(const[key,label]of[['investidor','Fundos investidores'],['investido','Fundos investidos']]){
+    const list=S.funds[key];
+    h+=`<div class="card" style="border-top:2px solid #185FA5">
+      <div style="font-weight:700;color:#0C447C;margin-bottom:12px;font-size:15px">${label}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">`;
+    for(let i=0;i<list.length;i++){
+      h+=`<div style="display:flex;gap:6px">
+        <input type="text" value="${e(list[i])}" onchange="editF('${key}',${i},this.value)">
+        <button class="btn sm" style="flex-shrink:0" onclick="rmvF('${key}',${i})">×</button>
+      </div>`;
+    }
+    h+=`</div><button class="btn sm" onclick="addF('${key}')">+ Adicionar</button></div>`;
+  }
+  h+=`</div><p style="font-size:13px;color:#555;margin-top:1rem">Edite diretamente. Salvo automaticamente no navegador.</p>`;
+  return h;
+}
+
+function go(v){S.view=v;S.showForm=false;R();}
+function openDet(id){
+  S.selId=id;S.view='detail';
+  const o=S.orders.find(x=>x.id===id);
+  if(o){let idx=o.steps.findIndex(s=>!s.done);S.focusStep=idx<0?0:idx;}
+  R();
+}
+function togForm(){
+  S.showForm=!S.showForm;_ik=false;S.fd={};R();
+  if(S.showForm)setTimeout(()=>{const f=document.getElementById('new-order-form');if(f){f.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>{const fi=document.getElementById('f-fi');if(fi)fi.focus();},300);}},60);
+}
+function togIK(){
+  _ik=!_ik;
+  const t=document.getElementById('ik-tog');const l=document.getElementById('ik-lbl');
+  if(t)t.className='tog'+(_ik?' on':'');
+  if(l)l.textContent=_ik?'Sim':'Não';
+}
+function setFocus(i){S.focusStep=i;R();}
+function navStep(i){if(i>=0&&i<STEPS.length){S.focusStep=i;R();}}
+function createOrd(){
+  const o={
+    id:uid(),
+    fi:document.getElementById('f-fi').value,
+    fiv:document.getElementById('f-fiv').value,
+    gestora:document.getElementById('f-gest').value.trim(),
+    tipo:document.getElementById('f-tipo').value,
+    valor:parseFloat(document.getElementById('f-val').value)||0,
+    moeda:document.getElementById('f-moe').value,
+    inKind:_ik,
+    steps:STEPS.map(()=>({done:false,obs:''})),
+    createdAt:new Date().toISOString(),
+  };
+  S.orders.unshift(o);S.showForm=false;saveO();R();
+}
+function delOrd(id){S.orders=S.orders.filter(o=>o.id!==id);S.view='orders';saveO();R();}
+function togStep(id,idx,val){const o=S.orders.find(x=>x.id===id);if(!o)return;o.steps[idx].done=val;saveO();R();}
+function updObs(el){const o=S.orders.find(x=>x.id===el.dataset.oid);if(o){o.steps[parseInt(el.dataset.idx)].obs=el.value;saveO();}}
+function resetSt(id){const o=S.orders.find(x=>x.id===id);if(!o)return;o.steps.forEach(s=>{s.done=false;s.obs='';});saveO();R();}
+function addF(t){S.funds[t].push('');saveF();R();}
+function editF(t,i,v){S.funds[t][i]=v;saveF();}
+function rmvF(t,i){S.funds[t].splice(i,1);saveF();R();}
+
+R();
+</script>
+</body>
+</html>

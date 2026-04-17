@@ -77,7 +77,29 @@ const STEPS=[
 ];
 const ADMINS=['Apex Group','Alter Domus','Augentius','Aztec Group','BNY Mellon','Carey Olsen','Citi Fund Services','Citco','Conyers','Deutsche Bank','Elysium Fund Management','HedgeServ','HSBC Securities Services','Intertrust Group','IQ EQ','JPMorgan Chase','Mainstream Group','Maples Group','Mourant','NAV Consulting','Northern Trust','Ogier','SEI Investments','SS&C Technologies','State Street','TMF Group','Trident Trust','UBS Fund Services','Vistra','Walkers Fund Services'];
 const HFUNDS=['AQR Capital Management','Anchorage Capital Group','Appaloosa Management','Balyasny Asset Management','Baupost Group','Brevan Howard','Bridgewater Associates','Capula Investment Management','Citadel','Coatue Management','D.E. Shaw','Elliott Management','Glenview Capital Management','Graham Capital Management','Greenlight Capital','Jana Partners','King Street Capital','Lone Pine Capital','Man Group','Marshall Wace','Millennium Management','Pershing Square Capital Management','Point72 Asset Management','Renaissance Technologies','Sculptor Capital Management','Third Point','Tiger Global Management','Two Sigma','Viking Global Investors','Winton Group'];
-const DF=['TERA HF','TERA CORE BONDS SP','TERA TREND FOLLOWING SP','TERA GLOBAL SPC'];
+const DF_INV=[
+  'Euskadi Investments Ltd.',
+  'Olympic Bahamas Ltd.',
+  'RM Fund Ltd.',
+  'CB Fund LP',
+  'Graybar Financial Services Corporation',
+  'AMGS Investments Ltd.',
+  'Bagli Limited',
+  'Wentworth Fund Icon',
+  'Peachbay International Corp',
+  'Teesdale Corporation',
+  'Tera Global SPC - Tera HF SP',
+  'Tera Global SPC - Tera Core Bonds SP',
+  'Tera Global SPC - Tera Trend Following SP',
+  'Duvall Enterprises Inc.',
+  'Fide Co Ltd.',
+  'Triboju Ltd.',
+];
+const DF_IVD=[
+  'TERA HF SP',
+  'TERA CORE BONDS SP',
+  'TERA TREND FOLLOWING SP',
+];
 
 const load=k=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch{return null;}};
 const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
@@ -85,7 +107,7 @@ const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 let S={
   view:'orders',
   orders:load('sd_orders')||[],
-  funds:load('sd_funds')||{investidor:[...DF],investido:[...DF]},
+  funds:load('sd_funds')||{investidor:[...DF_INV],investido:[...DF_IVD]},
   selId:null,showForm:false,fd:{},focusStep:0
 };
 let _ik=false;

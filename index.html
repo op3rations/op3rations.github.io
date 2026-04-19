@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Demandas Operations</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='white'/><text x='50' y='70' font-family='Arial' font-size='54' font-weight='900' letter-spacing='-3' fill='%23F15D1B' text-anchor='middle'>OPS</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='75' font-family='Arial' font-size='72' font-weight='900' letter-spacing='-5' fill='%23F15D1B' text-anchor='middle'>OPS</text></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2D2D2D;font-size:16px;line-height:1.6;background:#F7F7F7;padding:1rem}
@@ -97,7 +97,7 @@ label{font-size:11px;color:#626367;font-weight:700;text-transform:uppercase;lett
 <div class="err-bar" id="err-bar">Erro ao salvar.</div>
 
 <script>
-var SCRIPT_URL='https://script.google.com/macros/s/AKfycbzKvj-x_aQqQE-Nm_mFSgF87bJh9bvOi1zKY7QBU88iL6EFeAfd6_1EflZb-Gd3mGxd/exec';
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbzJYsrleafRW30HVg2uAJjWZ37Dq1ZyZIBmH-RN6NRrAXQkW2xpfaTbF-N_BWCIMhhMcQ/exec';
 var currentUser=null;
 
 var ON_COLS=['Fundo','Administrador','Gestor','Auditoria','Distribuidor','Tributa\u00e7\u00e3o Aplic\u00e1vel','CNPJ','ISIN','C\u00f3digo ADM','Aplica\u00e7\u00e3o Inicial M\u00ednima','Aplica\u00e7\u00e3o Cot.','Aplica\u00e7\u00e3o Liq.','Resgate Cot.','Resgate Liq.','Cust\u00f3dia','GIIN','Condom\u00ednio','Tipo Investidor','Data de In\u00edcio','Taxa Adm','Taxa Gest\u00e3o','Taxa Global','C\u00f3digo Anbima','Mnemonico','C\u00f3digo CVM','Classifica\u00e7\u00e3o CVM','Classifica\u00e7\u00e3o Anbima','Conta SELIC','Conta CETIP','Conta CBLC','CCI','Conta Liquida\u00e7\u00e3o (Aportes TERA > Externos)','Conta Aplica\u00e7\u00e3o (Aporte Externos > TERA)','Conta Resgate'];
@@ -156,7 +156,7 @@ var DF_IVD=['TERA HF SP','TERA CORE BONDS SP','TERA TREND FOLLOWING SP'];
 var DF_FUNDS={investidor:DF_INV.slice(),investido:DF_IVD.slice(),admins:ADMINS_DEF.slice()};
 
 // ─── STATE ────────────────────────────────────────────────
-var S={view:'orders',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false};
+var S={view:'orders',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],docs:[],selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false,docNew:false,docEdit:null};
 var _ik=false,_saveTimer=null,_refreshTimer=null;
 
 // ─── HELPERS ──────────────────────────────────────────────
@@ -217,11 +217,11 @@ function init(){
   fetch(SCRIPT_URL+'?action=getData&t='+Date.now())
     .then(function(r){return r.text();})
     .then(function(txt){
-      try{var d=JSON.parse(txt);S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=d.onshore&&d.onshore.length?d.onshore:ON_DEFAULT.slice();}
-      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();}
+      try{var d=JSON.parse(txt);S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=d.onshore&&d.onshore.length?d.onshore:ON_DEFAULT.slice();S.docs=d.docs||[];}
+      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];}
       S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);
     })
-    .catch(function(){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
+    .catch(function(){      S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
 }
 function autoRefresh(){
   if(S.showForm||S.editId||S.onNew||S.onEdit!==null||S.view==='onshore')return;
@@ -234,7 +234,93 @@ function autoRefresh(){
 }
 function saveO(){lsSave('sd_orders',S.orders);showSave();fetch(SCRIPT_URL+'?action=save&type=orders&data='+encodeURIComponent(JSON.stringify(S.orders))).catch(function(){showErr();});}
 function saveF(){lsSave('sd_funds',S.funds);showSave();fetch(SCRIPT_URL+'?action=save&type=funds&data='+encodeURIComponent(JSON.stringify(S.funds))).catch(function(){showErr();});}
-function saveOn(){lsSave('sd_onshore',S.onshore);showSave();fetch(SCRIPT_URL+'?action=save&type=onshore&data='+encodeURIComponent(JSON.stringify(S.onshore))).catch(function(){showErr();});}
+function saveDocs(){lsSave('sd_docs',S.docs);showSave();fetch(SCRIPT_URL+'?action=save&type=docs&data='+encodeURIComponent(JSON.stringify(S.docs))).catch(function(){showErr();});}
+
+function vDocs(){
+  var cats=['Manuais','Wire Instructions','Cotas Onshore'];
+  var icons={'Manuais':'&#128218;','Wire Instructions':'&#128199;','Cotas Onshore':'&#128202;'};
+  var h='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">';
+  h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Reposit&oacute;rio</div>';
+  h+='<h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Documentos</h1></div>';
+  h+='<button class="btn p" onclick="docNewOpen()">+ Adicionar documento</button></div>';
+  if(S.docNew)h+=docForm(false,null);
+  for(var c=0;c<cats.length;c++){
+    var cat=cats[c];
+    var docs=S.docs.filter(function(d){return d.cat===cat;});
+    h+='<div style="margin-bottom:1.5rem">';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #F15D1B">';
+    h+='<span style="font-size:18px">'+icons[cat]+'</span>';
+    h+='<h2 style="font-size:17px;font-weight:700;color:#2D2D2D">'+cat+'</h2>';
+    h+='<span style="font-size:12px;color:#888;font-weight:400">('+docs.length+')</span></div>';
+    if(docs.length===0){
+      h+='<div style="color:#888;font-size:13px;padding:12px 0">Nenhum documento nesta categoria ainda.</div>';
+    }else{
+      h+='<div style="display:flex;flex-direction:column;gap:8px">';
+      for(var i=0;i<docs.length;i++){
+        var d=docs[i];var realIdx=S.docs.indexOf(d);
+        if(S.docEdit===realIdx){h+=docForm(true,d);continue;}
+        h+='<div class="card" style="display:flex;align-items:center;gap:12px">';
+        h+='<div style="font-size:28px">'+docIcon(d.nome)+'</div>';
+        h+='<div style="flex:1"><div style="font-weight:600;font-size:14px;color:#2D2D2D">'+esc(d.nome)+'</div>';
+        h+='<div style="font-size:12px;color:#626367;margin-top:2px">'+esc(d.desc||'')+'</div></div>';
+        h+='<div style="display:flex;gap:6px;flex-shrink:0">';
+        h+='<a href="'+esc(d.url)+'" target="_blank" download style="text-decoration:none"><button class="btn p" style="font-size:12px;padding:5px 12px">&#11015; Baixar</button></a>';
+        h+='<button class="btn sm" onclick="docEditOpen('+realIdx+')" style="font-size:14px">&#9998;</button>';
+        h+='<button class="btn sm dr" onclick="docDel('+realIdx+')">&#10005;</button></div></div>';
+      }
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  return h;
+}
+
+function docIcon(nome){
+  if(!nome)return'&#128196;';
+  var n=(nome||'').toLowerCase();
+  if(n.indexOf('.xlsx')>=0||n.indexOf('.xls')>=0)return'&#129001;';
+  if(n.indexOf('.docx')>=0||n.indexOf('.doc')>=0)return'&#128203;';
+  if(n.indexOf('.pdf')>=0)return'&#128196;';
+  return'&#128196;';
+}
+
+function docForm(isEdit,d){
+  var cats=['Manuais','Wire Instructions','Cotas Onshore'];
+  var v=isEdit?d:{nome:'',desc:'',url:'',cat:'Manuais'};
+  var h='<div class="ifrm" style="margin-bottom:1rem">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">';
+  h+='<span style="font-weight:700;font-size:15px;color:#F15D1B">'+(isEdit?'&#9998; Editando documento':'+ Novo documento')+'</span>';
+  h+='<button class="btn sm" onclick="'+(isEdit?'docEditCancel()':'docNewCancel()')+'">Cancelar</button></div>';
+  h+='<div class="fr"><div class="fg"><label>Nome do arquivo</label><input type="text" id="doc-nome" placeholder="Ex: Manual Subdoc Offshore v2.xlsx" value="'+esc(v.nome||'')+'"></div>';
+  h+='<div class="fg"><label>Categoria</label><select id="doc-cat">';
+  cats.forEach(function(c){h+='<option value="'+c+'"'+(v.cat===c?' selected':'')+'>'+c+'</option>';});
+  h+='</select></div></div>';
+  h+='<div class="fg"><label>Descri&ccedil;&atilde;o</label><input type="text" id="doc-desc" placeholder="Ex: Modelo padr&atilde;o de wire instruction para fundos offshore" value="'+esc(v.desc||'')+'"></div>';
+  h+='<div class="fg"><label>Link do arquivo (URL do GitHub)</label><input type="text" id="doc-url" placeholder="https://github.com/FelipeMFerreira/SubDocs/raw/main/docs/arquivo.xlsx" value="'+esc(v.url||'')+'"></div>';
+  h+='<div style="background:#E6F1FB;border-radius:8px;padding:10px 14px;font-size:12px;color:#0C447C;margin-bottom:12px">';
+  h+='<strong>Como obter o link:</strong> Suba o arquivo no GitHub &rarr; abra o arquivo &rarr; clique em <strong>Raw</strong> &rarr; copie a URL da barra de endere&ccedil;o.</div>';
+  h+='<div style="display:flex;justify-content:flex-end"><button class="btn p" style="padding:9px 24px;font-size:14px;font-weight:600" onclick="'+(isEdit?'docEditSave()':'docNewSave()')+'">'+( isEdit?'Salvar':'Adicionar')+'</button></div></div>';
+  return h;
+}
+
+function docNewOpen(){S.docNew=true;S.docEdit=null;R();}
+function docNewCancel(){S.docNew=false;R();}
+function docNewSave(){
+  var nome=(document.getElementById('doc-nome').value||'').trim();
+  var url=(document.getElementById('doc-url').value||'').trim();
+  if(!nome||!url){alert('Preencha ao menos o nome e o link do arquivo.');return;}
+  S.docs.push({nome:nome,desc:(document.getElementById('doc-desc').value||'').trim(),url:url,cat:document.getElementById('doc-cat').value});
+  S.docNew=false;saveDocs();R();
+}
+function docEditOpen(i){S.docEdit=i;S.docNew=false;R();}
+function docEditCancel(){S.docEdit=null;R();}
+function docEditSave(){
+  var i=S.docEdit;if(i===null)return;
+  S.docs[i]={nome:(document.getElementById('doc-nome').value||'').trim(),desc:(document.getElementById('doc-desc').value||'').trim(),url:(document.getElementById('doc-url').value||'').trim(),cat:document.getElementById('doc-cat').value};
+  S.docEdit=null;saveDocs();R();
+}
+function docDel(i){if(!confirm('Excluir este documento?'))return;S.docs.splice(i,1);S.docEdit=null;saveDocs();R();}
+
 
 // ─── RENDER ───────────────────────────────────────────────
 function R(){
@@ -245,10 +331,12 @@ function R(){
     h+='<button class="nb'+(S.view==='orders'?' active':'')+'" onclick="go(\'orders\')">Ordens</button>';
     h+='<button class="nb'+(S.view==='onshore'?' active':'')+'" onclick="go(\'onshore\')">Base Onshore</button>';
     h+='<button class="nb'+(S.view==='funds'?' active':'')+'" onclick="go(\'funds\')">Fundos</button>';
+    h+='<button class="nb'+(S.view==='docs'?' active':'')+'" onclick="go(\'docs\')">Documentos</button>';
     h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
     if(S.view==='orders')h+=vOrders();
     else if(S.view==='detail')h+=vDetail();
     else if(S.view==='onshore')h+=vOnshore();
+    else if(S.view==='docs')h+=vDocs();
     else h+=vFunds();
     root.innerHTML=h;
   }catch(err){root.innerHTML='<div style="padding:2rem;color:#c0392b;background:#FCEBEB;border-radius:8px;margin:1rem">Erro: '+err.message+'<br><br><button class="btn p" onclick="go(\'orders\')">Tentar novamente</button></div>';}

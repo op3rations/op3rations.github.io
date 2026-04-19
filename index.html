@@ -7,8 +7,8 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2D2D2D;font-size:16px;line-height:1.6;background:#F7F7F7;padding:1rem}
-.wrap{max-width:960px;margin:0 auto;background:#fff;border-radius:12px;padding:1.5rem;min-height:100vh;border:1px solid #e0e0e0}
-.nav{display:flex;gap:6px;padding-bottom:12px;border-bottom:1px solid #ddd;margin-bottom:1.25rem;align-items:center}
+.wrap{max-width:1100px;margin:0 auto;background:#fff;border-radius:12px;padding:1.5rem;min-height:100vh;border:1px solid #e0e0e0}
+.nav{display:flex;gap:6px;padding-bottom:12px;border-bottom:1px solid #ddd;margin-bottom:1.25rem;align-items:center;flex-wrap:wrap}
 .nb{background:none;border:none;padding:6px 16px;cursor:pointer;border-radius:8px;color:#626367;font-size:14px}
 .nb.active{background:#4F5053;color:#fff;font-weight:600}
 .nb:hover:not(.active){background:#F7F7F7;color:#2D2D2D}
@@ -29,13 +29,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2
 .b-no{background:#F7F7F7;color:#626367}
 .b-red{background:#FCEBEB;color:#A32D2D}
 .b-ora{background:#FDE8DC;color:#d44e14}
-input,select{font-family:inherit;font-size:15px;font-weight:500;color:#2D2D2D;background:#fff;border:1px solid #ccc;border-radius:8px;padding:9px 12px;width:100%}
+input,select,textarea{font-family:inherit;font-size:15px;font-weight:500;color:#2D2D2D;background:#fff;border:1px solid #ccc;border-radius:8px;padding:9px 12px;width:100%}
+textarea{resize:vertical;min-height:60px;font-size:13px}
 input[type=checkbox]{width:auto;accent-color:#F15D1B;transform:scale(1.2)}
-input:focus,select:focus{outline:none;box-shadow:0 0 0 2px #F5C5A8;border-color:#F15D1B}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F5C5A8;border-color:#F15D1B}
 label{font-size:11px;color:#626367;font-weight:700;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:5px}
 .fg{margin-bottom:12px}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.fr4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px}
 .ifrm{background:#F7F7F7;border:2px solid #F15D1B;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
 .tog-wrap{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;user-select:none}
 .tog{width:36px;height:20px;background:#ccc;border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
@@ -59,6 +61,15 @@ label{font-size:11px;color:#626367;font-weight:700;text-transform:uppercase;lett
 .err-bar.vis{display:block}
 .filter-bar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
 .filter-bar select{width:auto;font-size:13px;padding:6px 10px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;background:#F7F7F7;border-bottom:2px solid #e0e0e0;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#626367;font-weight:700;white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.tbl tr:hover td{background:#FDE8DC22;cursor:pointer}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid #e0e0e0}
+.detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.detail-item{background:#F7F7F7;border-radius:8px;padding:10px 12px}
+.detail-item label{font-size:10px;color:#F15D1B;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.detail-item span{font-size:13px;color:#2D2D2D;font-weight:500;word-break:break-word}
 </style>
 </head>
 <body>
@@ -71,8 +82,8 @@ label{font-size:11px;color:#626367;font-weight:700;text-transform:uppercase;lett
     </svg>
     <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:6px">Offshore &amp; Onshore</div>
     <div style="font-size:22px;font-weight:700;margin-bottom:2rem;color:#2D2D2D">Demandas Operations</div>
-    <div id="login-err" style="display:none;background:#FCEBEB;border:1px solid #f09595;border-radius:8px;padding:8px 12px;font-size:13px;color:#A32D2D;font-weight:600;margin-bottom:12px">Usuário ou senha incorretos.</div>
-    <div class="fg"><label>Usuário</label><input type="text" id="l-user" placeholder="Nome e sobrenome"></div>
+    <div id="login-err" style="display:none;background:#FCEBEB;border:1px solid #f09595;border-radius:8px;padding:8px 12px;font-size:13px;color:#A32D2D;font-weight:600;margin-bottom:12px">Usu&aacute;rio ou senha incorretos.</div>
+    <div class="fg"><label>Usu&aacute;rio</label><input type="text" id="l-user" placeholder="Nome e sobrenome"></div>
     <div class="fg"><label>Senha</label><input type="password" id="l-pass" placeholder="Sua senha"></div>
     <button class="btn p" id="login-btn" style="width:100%;padding:10px;font-size:15px;font-weight:600;margin-top:8px">Entrar &#8594;</button>
   </div>
@@ -85,74 +96,40 @@ label{font-size:11px;color:#626367;font-weight:700;text-transform:uppercase;lett
 <div class="err-bar" id="err-bar">Erro ao salvar.</div>
 
 <script>
-var SCRIPT_URL='https://script.google.com/macros/s/AKfycbyeMkpdm20i7qoS_e5pfyeAB8Ji_ZYTi3LmWUOlZb7NfjSwhAGLuqv4qjogCaFXoEGkRw/exec';
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbzKvj-x_aQqQE-Nm_mFSgF87bJh9bvOi1zKY7QBU88iL6EFeAfd6_1EflZb-Gd3mGxd/exec';
 var currentUser=null;
 
-// ─── AUTH ─────────────────────────────────────────────────
-function lsLoad(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
-function lsSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+var ON_COLS=['Fundo','Administrador','Gestor','Auditoria','Distribuidor','Tributa\u00e7\u00e3o Aplic\u00e1vel','CNPJ','ISIN','C\u00f3digo ADM','Aplica\u00e7\u00e3o Inicial M\u00ednima','Aplica\u00e7\u00e3o Cot.','Aplica\u00e7\u00e3o Liq.','Resgate Cot.','Resgate Liq.','Cust\u00f3dia','GIIN','Condom\u00ednio','Tipo Investidor','Data de In\u00edcio','Taxa Adm','Taxa Gest\u00e3o','Taxa Global','C\u00f3digo Anbima','Mnemonico','C\u00f3digo CVM','Classifica\u00e7\u00e3o CVM','Classifica\u00e7\u00e3o Anbima','Conta SELIC','Conta CETIP','Conta CBLC','CCI','Conta Liquida\u00e7\u00e3o (Aportes TERA > Externos)','Conta Aplica\u00e7\u00e3o (Aporte Externos > TERA)','Conta Resgate'];
 
-function showLogin(){document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
-function showApp(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-  var root=document.getElementById('root');
-  if(root)root.innerHTML='<div style="text-align:center;padding:4rem;color:#626367"><div style="font-size:14px;color:#F15D1B;font-weight:600">Carregando...</div></div>';
-}
+var ON_DEFAULT=[
+  ['FUNDO DE INVESTIMENTO EM DIREITOS CREDITÓRIOS CONRETORNO - RESPONSABILIDADE LIMITADA','BANVOX DISTRIBUIDORA','TERA INVESTIMENTOS LTDA.','Solicitado ao ADM','BANVOX DISTRIBUIDORA','','58.238.773/0001-90','','','','','','','','','','','','','0,16%','','','','','01288908-0','','','','','723542-0','','','',''],
+  ['FUNDO DE INVESTIMENTO EM DIREITOS CREDITÓRIOS CONSORCIEI I - RESPONSABILIDADE LIMITADA','BANVOX DISTRIBUIDORA','TERA INVESTIMENTOS LTDA.','UHY BENDORAYTES & CIA AUDITORES INDEPENDENTES','BANVOX DISTRIBUIDORA','15%','27.984.909/0001-88','BR03ZCCTF007','N/A','N/A','Fechado','Fechado','Fechado','Fechado','BANVOX DISTRIBUIDORA','742B9H.00142.SF.076','FECHADO','PROFISSIONAL','','0,0035','0.004','N/A','F0000523127','ATUALIZAR','219218','FIDC','FIDC','00250179-4','33571.00-1','N/A','N/A','','',''],
+  ['FUNDO DE INVESTIMENTO EM DIREITOS CREDITÓRIOS CONSORCIEI II - RESPONSABILIDADE LIMITADA','BANVOX DISTRIBUIDORA','TERA INVESTIMENTOS LTDA.','UHY BENDORAYTES & CIA AUDITORES INDEPENDENTES','BANVOX DISTRIBUIDORA','15%','43.237.790/0001-36','BR0BVTCTF009','N/A','1.000,00','Fechado','Fechado','Fechado','Fechado','BANVOX DISTRIBUIDORA','742B9H.00273.SF.076','FECHADO','PROFISSIONAL','07/02/2022','0.0030','0.004','N/A','F0000646849','ATUALIZAR','222047','FIDC','FIDC','00800404-8','44.601.00-1','N/A','N/A','','',''],
+  ['FUNDO DE INVESTIMENTO EM DIREITOS CREDITÓRIOS CONSÓRCIOS EXTERNOS - RESPONSABILIDADE LIMITADA','BANVOX DISTRIBUIDORA','TERA INVESTIMENTOS LTDA.','Solicitado ao ADM','BANVOX DISTRIBUIDORA','15%','57.624.406/0001-62','Questionar ADM','N/A','1.000,00','Fechado','Fechado','Fechado','Fechado','BANVOX DISTRIBUIDORA','45PJEQ.99999.SL.076','FECHADO','PROFISSIONAL','10/04/2024','0,0024','0.004','N/A','C0001210076','ATUALIZAR','224831','FIDC','FIDC','1264889-2','-','N/A','N/A','','',''],
+  ['FUNDO DE INVESTIMENTO EM DIREITOS CREDITÓRIOS DE CONSÓRCIOS CONSORCIEI III RESPONSABILIDADE LIMITADA','BANVOX DISTRIBUIDORA','TERA INVESTIMENTOS LTDA.','UHY BENDORAYTES & CIA AUDITORES INDEPENDENTES','BANVOX DISTRIBUIDORA','15%','57.213.492/0001-10','BR0LRCCTF002','N/A','1.000,00','Fechado','Fechado','Fechado','Fechado','BANVOX DISTRIBUIDORA','5ECYFK.99999.SL.076','FECHADO','PROFISSIONAL','09/09/2024','0,0024','0.004','N/A','C0001216562','ATUALIZAR','224723','FIDC','FIDC','1252971-7','57776.00-2','N/A','N/A','591 - 0001 - 973298-0','591 - 0001 - 973298-0',''],
+  ['FUNDO DE INVESTIMENTO EM DIREITOS CREDITÓRIOS DE CONSÓRCIOS YELLOWSTONE - RESPONSABILIDADE LIMITADA','BANVOX DISTRIBUIDORA','TERA INVESTIMENTOS LTDA.','UHY BENDORAYTES & CIA AUDITORES INDEPENDENTES','BANVOX DISTRIBUIDORA','15%','55.013.574/0001-96','BR0JJPCTF021','N/A','N/A','Fechado','Fechado','Fechado','Fechado','BANVOX DISTRIBUIDORA','742B9H.00335.SF.076','FECHADO','PROFISSIONAL','06/05/2024','0,0024','0.004','N/A','F0000765082','ATUALIZAR','224301','FIDC','FIDC','01190632-2','55984.00-9','N/A','N/A','180 – 001 – 1104667-0','180 – 001 – 1104667-0','180 – 001 – 1104667-0'],
+  ['LIDIDU FUNDO DE INVESTIMENTO FINANCEIRO MULTIMERCADO CRÉDITO PRIVADO RESPONSABILIDADE LIMITADA','BEM DISTRIBUIDORA DE TITULOS E VALORES MOBILIARIOS LTDA','TERA INVESTIMENTOS LTDA.','DELOITTE TOUCHE TOHMATSU AUDITORES INDEPENDENTES LTDA','BANCO BRADESCO S.A. (60.746.948/0001-12)','Longo Prazo','09.489.396/0001-57','BRLDDUCTF001','N/A','100','D0','D0','D0','D+1 (DU)','BANCO BRADESCO S.A.','IY9J6M.01746.SF.076','FECHADO','PROFISSIONAL','22/10/2009','0.0008','0.003','0,38%','F0000239216','N/A','130885','Multimercados Livre','Multimercados','304300705','9329005','111998-1','Confirmar','237 - 2856 - 56243-2','237 - 2856 - 56243-2','237 - 2856 - 56243-2'],
+  ['VRB ICATU PREV FUNDO DE INVESTIMENTO FINANCEIRO MULTIMERCADO - RESPONSABILIDADE LIMITADA','BNY MELLON','TERA INVESTIMENTOS LTDA.','KPMG AUDITORES INDEPENDENTES LTDA','BNY MELLON SERVICOS FINANCEIROS DTVM S.A.','Isento','43.121.882/0001-56','BR0CD8CTF006','','BNY12339','N/A','D0','D0','D+6 (DU)','D+3 (DU)','BNY MELLON','6RCG01.03345.SF.076','ABERTO','PROFISSIONAL','02/06/2022','0.01','N/A','N/A','F0000670677','ATUALIZAR','462080','Multimercados','Previdência','0092.69.63.5','4656.6.00.3','6272-5','2012093-6','017 - 0001 - 6272-3','017 - 0001 - 6272-3',''],
+  ['CORAL FUNDO INCENTIVADO DE INVEST EM INFRA RENDA FIXA CRÉDITO PRIVADO RESPONSABILIDADE LIMITADA','BTG Pactual','TERA INVESTIMENTOS LTDA.','ERNST & YOUNG AUDITORES INDEPENDENTES S/S LTDA','BANCO BTG PACTUAL S/A','Isento','54.592.731/0001-00','BR0J24CTF008','N/A','N/A','D0','D0','D0','D+3 (DU)','BANCO BTG PACTUAL S/A','9EHHT.J99999.SL.076','ABERTO','PROFISSIONAL','01/04/2024','0.0037','N/A','0,37%','F0000760625','N/A','529550','FIDC','Renda Fixa','11677945','55087009','5379697-4','N/A','0053.796-97','0053.796-97','0053.796-97'],
+  ['MALUBI FUNDO DE INVESTIMENTO FINANCEIRO MULTIMERCADO','BTG Pactual','TERA INVESTIMENTOS LTDA.','PRICEWATERHOUSECOOPERS AUDITORES INDEPENDENTES LTDA','BANCO BTG PACTUAL S/A','Longo Prazo','11.275.055/0001-20','BRMLUBCTF006','N/A','1.000,00','D0','D0','D+1 (DU)','D+3 (DU)','BANCO BTG PACTUAL S/A','M18VWS.99999.SL.076','ABERTO','PROFISSIONAL','18/12/2009','0.003','N/A','N/A','F0000392790','N/A','190233','FIDC','Multimercados','00018209-0','2234700-2','8311933-2','784098-3','208 - 1 - 008311933','208 - 1 - 008311933',''],
+  ['TERA CRED FV FI EM COTAS DE FUNDOS DE INVESTIMENTO EM DIREITOS CREDITÓRIOS RESPONSABILIDADE LIMITADA','BTG Pactual','TERA INVESTIMENTOS LTDA.','PRICEWATERHOUSECOOPERS AUDITORES INDEPENDENTES LTDA','BANCO BTG PACTUAL S/A','15%','57.811.727/0001-76','BR0MHQCTF001','N/A','N/A','Fechado','Fechado','Fechado','Fechado','BANCO BTG PACTUAL S/A','WE5BCI99999SL076','FECHADO','PROFISSIONAL','23/10/2024','0,0015','N/A','N/A','F0001180053','N/A','224877','FIDC','FIDC','12714449','58485000','1026-0','N/A','8231078','8231078','8231078'],
+  ['TERA YIELD FI EM COTAS DE FUNDOS DE INVESTIMENTO EM DIREITOS CREDITÓRIOS RESPONSABILIDADE LIMITADA','BTG Pactual','TERA INVESTIMENTOS LTDA.','ERNST & YOUNG AUDITORES INDEPENDENTES S/S LTDA','BANCO BTG PACTUAL S/A','15%','31.611.449/0001-10','BR05QFCTF004','N/A','N/A','D0','D0','Cotização final de mês após D+89 (corridos)','D+1 (DU)','BANCO BTG PACTUAL S/A','IY9J6M.02861.SF.076','ABERTO','PROFISSIONAL','30/07/2024','0.0015','0.005','N/A','F0000509914','N/A','224581','FIDC','FIDC','2379623','31827.00-1','N/A','2012424-9','8541 - 0059874 - 7','8541 - 0059876 - 2','8541 - 0059877 - 0'],
+  ['VRB PREVIDÊNCIA FUNDO DE INVESTIMENTO FINANCEIRO MULTIMERCADO','BTG Pactual','TERA INVESTIMENTOS LTDA.','ERNST & YOUNG AUDITORES INDEPENDENTES S/S LTDA.','BANCO BTG PACTUAL S/A','Previdenciário','56.047.238/0001-27','BR0L5SCTF007','N/A','N/A','D0','D0','D+30 (DU)','D+2 (DU)','BANCO BTG PACTUAL S/A','6RCG01.03538.SF.076','ABERTO','PROFISSIONAL','23/07/2024','0.0007','0.0069','N/A','C0001194712','5701124A127','543136','Multimercados','Previdência','01233083-8','5701100-4','N/A','N/A','208 - 0001 - 00586507-8','208 - 0001 - 00586507-8','208 - 0001 - 00586507-8'],
+  ['AVANTE FIF MULT CRED PRIV RESP LIMITADA','INTRAG','TERA INVESTIMENTOS LTDA.','DELOITTE TOUCHE TOHMATSU AUDITORES INDEPENDENTES LTDA.','INTRAG DTVM LTDA - 62.418.140/0001-31','Longo Prazo','11.350.412/0001-78','BRAVTFCTF003','INTRPATRIA580','1.000,00','D0','D0','D+1 (DU)','D+3 (DU)','Itaú','IY9J6M.00046.SF.076','FECHADO','PROFISSIONAL','21/12/2009','0.0008','0.0025','N/A','F0000393851','N/A','190209','Multimercados','Multimercados','0001.82.07.6','Não possui','6215','784104-1','8541 - 0014543 - 2','8541 - 0014544 - 0','8541 - 0014545 - 7'],
+  ['TERA EQUITY FUNDO DE INVESTIMENTO FINANCEIRO EM AÇÕES RESPONSABILIDADE LIMITADA','INTRAG','TERA INVESTIMENTOS LTDA.','PRICEWATERHOUSECOOPERS AUDITORES INDEPENDENTES LTDA','INTRAG DTVM LTDA - 62.418.140/0001-31','15%','26.813.771/0001-91','BR060NCTF004','HGRIFFO62806','1.000.000,00','D+1 (DU)','D+1 (DU)','D+60 (corridos)','D+2 (DU)','Itaú','IY9J6M.03758.SF.076','ABERTO','PROFISSIONAL','10/02/2017','0.0008','N/A','0,08%','F0000440752','N/A','272345','Ações','Ações','0003.49.58.9','Não possui','7162','2012364-1','8541 - 0071821 -2','8541 - 0071819 - 6','8541 - 0071818 - 8'],
+  ['CORINGA FUNDO DE INVESTIMENTO FINANCEIRO MULTIMERCADO CRÉDITO PRIVADO RESPONSABILIDADE LIMITADA','INTRAG','TERA INVESTIMENTOS LTDA.','DELOITTE TOUCHE TOHMATSU AUDITORES INDEPENDENTES LTDA','INTRAG DTVM LTDA - 62.418.140/0001-31','Longo Prazo','09.625.871/0001-75','BRCRG2CTF001','JPCORINGA974','N/A','D0','D0','D+15 (corridos)','D+2 (DU)','Itaú','IY9J6M.01559.SF.076','RESTRITO','PROFISSIONAL','04/08/2008','0.0043','N/A','0,43%','F0000215201','N/A','113654','Multimercados','Multimercados','4322.00.70.6','0699.3.00.1','5382','1267514-5','Não Possui','8541 - 0043207 - 9','Não Possui'],
+  ['DONOSTIA FIF MULTIMERCADO CRED PRIVADO INVESTIMENTO NO EXTERIOR RESPONSABILIDADE LIMITADA','INTRAG','TERA INVESTIMENTOS LTDA.','DELOITTE TOUCHE TOHMATSU AUDITORES INDEPENDENTES LTDA.','INTRAG DTVM LTDA - 62.418.140/0001-31','Longo Prazo','11.502.039/0001-23','BRDNTFCTF004','INTRPATRIA578','1.000.000,00','D0','D0','N/A*','N/A*','Itaú','IY9J6M.00143.SF.076','FECHADO','PROFISSIONAL','01/03/2010','0.0008','0.0037','N/A','F0000393762','N/A','190217','Multimercados','Multimercados','0001.82.06.9','2797.6.00.7','6884','688691-0','8541 - 0014558 - 0','8541 - 0014559 - 8','8541 - 0014560 - 6'],
+  ['LOREMA - FUNDO DE INVESTIMENTO FINANCEIRO MULTIMERCADO CRÉDITO PRIVADO - RESPONSABILIDADE LIMITADA','INTRAG','TERA INVESTIMENTOS LTDA.','DELOITTE TOUCHE TOHMATSU AUDITORES INDEPENDENTES LTDA.','INTRAG DTVM LTDA - 62.418.140/0001-31','15%','11.275.059/0001-09','BRLRMFCTF003','INTRPATRIA577','1.000.000,00','D0','D0','D+1 (DU)','D+3 (DU)','Itaú','IY9J6M.00429.SF.076','ABERTO','PROFISSIONAL','28/08/2012','0.0008','0.0025','N/A','F0000393754','N/A','190241','Multimercados','Multimercados','0001.82.08.3','22672.00-7','6216','784101-7','8541 - 0014353 - 6','8541 - 0014355 - 1','8541 - 0014356 - 9'],
+  ['TERA DC FUNDO DE INVESTIMENTO FINANCEIRO DA CLASSE DE INVESTIMENTO EM COTAS EM AÇÕES RESP LIMITADA','INTRAG','TERA INVESTIMENTOS LTDA.','ERNST & YOUNG AUDITORES INDEPENDENTES S/S LTDA.','INTRAG DTVM LTDA - 62.418.140/0001-31','15%','42.229.361/0001-54','BR0B7TCTF003','INTTERA66131','N/A','D+1 (DU)','D+1 (DU)','D+30 (corridos)','D+2 (DU)','Itaú','IY9J6M.02759.SF.076','ABERTO','QUALIFICADO','04/02/2022','0.0008','N/A','0,08%','F0000637270','N/A','448575','Ações','Ações','0075.29.00-5','Não possui','9461','N/A','8541 - 0057567 - 9','8541 - 0057568 - 7','8541 - 0057569 - 5'],
+  ['TERA PREV ICATU QUALIFICADO FIF MULTIMERCADO CP','INTRAG','TERA INVESTIMENTOS LTDA.','DELOITTE TOUCHE TOHMATSU AUDITORES INDEPENDENTES LTDA.','INTRAG DTVM LTDA - 62.418.140/0001-31','Previdenciário','59.879.046/0001-75','BR0NL5CTF009','INTTERA68144','N/A','D0','D0','D+7 (DU)','D+2 (DU)','Itaú','IY9J6M.04106.SF.076','ABERTO','PROFISSIONAL','13/03/2025','0.0008','N/A','N/A','F0001234250','6059125TERA','564494','Multimercados','Previdência','0134.52.56.6','6059.1.00.9','N/A','991438','8541 - 0077641 - 8','8541 - 0077642 - 6','8541 - 0077643 - 4'],
+  ['VRB FUNDO DE INVESTIMENTO FINANCEIRO DA CLASSE DE INVESTIMENTO EM COTAS EM AÇÕES RESP LIMITADA','INTRAG','TERA INVESTIMENTOS LTDA.','ERNST & YOUNG AUDITORES INDEPENDENTES S/S LTDA.','INTRAG DTVM LTDA - 62.418.140/0001-31 / BRE AGENTE AUTÔNOMO DE INVESTIMENTOS EIRELI - 27.947.774/0001-80','15%','41.681.126/0001-56','BR08GOCTF001','INTTERA65594','300.000,00','D+1 (DU)','D+1 (DU)','D+45 (corridos)','D+2 (DU)','Itaú','IY9J6M.02411.SF.076','ABERTO','QUALIFICADO','01/06/2021','0.01','N/A','1%','F0000606715','N/A','413682','Ações','Ações','0065.32.72.3','4079.6.90.0','9101','2012094-4','8541 - 0053124 - 3','8541 - 0053125 - 0','8541 - 0053126 - 8'],
+  ['VRB FUNDO DE INVESTIMENTO FINANCEIRO MULTIMERCADO RESPONSABILIDADE LIMITADA','INTRAG','TERA INVESTIMENTOS LTDA.','ERNST & YOUNG AUDITORES INDEPENDENTES S/S LTDA.','INTRAG DTVM LTDA - 62.418.140/0001-31 / BRE AGENTE AUTÔNOMO DE INVESTIMENTOS EIRELI - 27.947.774/0001-80','Longo Prazo','24.140.275/0001-99','BRVRB2CTF003','INTRPATRIA62034','300.000,00','D+1 (DU)','D+1 (DU)','D+45 (corridos)','D+2 (DU)','Itaú','IY9J6M.00776.SF.076','ABERTO','QUALIFICADO','09/06/2016','0.01','N/A','1%','F0000420808','N/A','259381','Multimercados','Multimercados','0002.85.70.2','3982.6.00.4','N/A','N/A','8541 - 0027504 - 9','8541 - 0027505 - 6','8541 - 0027506 - 4'],
+  ['FUNDO DE INVESTIMENTO EM COTAS DE FUNDOS DE INVESTIMENTO EM DIREITOS CREDITÓRIOS CONSORCIEI ZERO','LIMINE TRUST DISTRIBUIDORA DE TITULOS E VALORES MOBILIARIOS LTDA.','TERA INVESTIMENTOS LTDA.','GRANT THORNTON AUDITORIA E CONSULTORIA LTDA.','LIMINE TRUST DISTRIBUIDORA DE TITULOS E VALORES MOBILIARIOS LTDA.','Longo Prazo','60.115.778/0001-78','Questionar ADM','N/A','N/A','Fechado','Fechado','Fechado','Fechado','LIMINE TRUST DISTRIBUIDORA DE TITULOS E VALORES MOBILIARIOS LTDA.','2IS35C.00187.SF.076','FECHADO','PROFISSIONAL','27/03/2025','0,01','N/A','N/A','N/A','N/A','225291','FIDC','FIDC','N/A','N/A','N/A','N/A','033 - 2271 - 13017123-4','N/A','N/A'],
+  ['PADOVA FUNDO DE INVESTIMENTO FINANCEIRO - MULTIMERCADO CREDITO PRIVADO RESPONSABILIDADE LIMITADA','UBS','TERA INVESTIMENTOS LTDA.','KPMG AUDITORES INDEPENDENTES LTDA.','CREDIT SUISSE HEDGING-GRIFFO CORRETORA DE VALORES S.A. - 61.809.182/0001-30','Longo Prazo','11.043.483/0001-28','BRPDVFCTF005','INTRPATRIA579','N/A','D0','D0','D+2 (DU)','D+3 (DU)','Itaú','IDFHLW.02196.SF.076','FECHADO','PROFISSIONAL','28/08/2012','0.003','N/A','0,30%','F0000392766','N/A','190225','Multimercados','Multimercados','00006083-9','2241400-7','8812-0','578464-9','341 - 8541 - 49756-9','341 - 8541 - 49756-9','341 - 8541 - 49756-9'],
+  ['RM - FUNDO DE INVESTIMENTO FINANCEIRO - MULTIMERCADO RESPONSABILIDADE LIMITADA','UBS','TERA INVESTIMENTOS LTDA.','KPMG AUDITORES INDEPENDENTES LTDA','CREDIT SUISSE HEDGING-GRIFFO CORRETORA DE VALORES S.A. - 61.809.182/0001-30','Longo Prazo','11.275.063/0001-77','BRRMMICTF005','INTRPATRIA60664','1.000.000,00','D0','D0','D+2 (DU)','D+3 (DU)','Itaú','IDFHLW.02293.SF.076','FECHADO','PROFISSIONAL','28/08/2012','0.003','N/A','0,30%','F0000393746','N/A','190195','Multimercados','Multimercados','00018105-3','2279900-7','6217-1','784097-5','341 - 8541 - 51297-9','341 - 8541 - 51297-9','341 - 8541 - 51297-9']
+];
 
-document.getElementById('login-btn').onclick=function(){
-  var u=(document.getElementById('l-user').value||'').trim();
-  var p=(document.getElementById('l-pass').value||'').trim();
-  var btn=document.getElementById('login-btn');
-  document.getElementById('login-err').style.display='none';
-  if(!u||!p){document.getElementById('login-err').style.display='block';return;}
-  btn.textContent='Entrando...';btn.disabled=true;
-  fetch(SCRIPT_URL+'?action=login&user='+encodeURIComponent(u)+'&pass='+encodeURIComponent(p)+'&t='+Date.now())
-    .then(function(r){return r.text();})
-    .then(function(txt){
-      var d=JSON.parse(txt);
-      if(d.success){
-        currentUser=d.name;
-        lsSave('sd_session',{user:currentUser,ts:Date.now()});
-        showApp();
-        btn.textContent='Entrar \u2192';btn.disabled=false;
-        init();
-      }else{
-        document.getElementById('login-err').style.display='block';
-        document.getElementById('l-pass').value='';
-        btn.textContent='Entrar \u2192';btn.disabled=false;
-      }
-    })
-    .catch(function(){
-      document.getElementById('login-err').innerHTML='Erro de conex\u00e3o. Tente novamente.';
-      document.getElementById('login-err').style.display='block';
-      btn.textContent='Entrar \u2192';btn.disabled=false;
-    });
-};
-
-document.addEventListener('keydown',function(e){
-  if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')
-    document.getElementById('login-btn').onclick();
-});
-
-function logout(){
-  lsSave('sd_session',null);
-  currentUser=null;
-  if(_refreshTimer){clearInterval(_refreshTimer);_refreshTimer=null;}
-  showLogin();
-}
-
-// Check existing session
-(function(){
-  var s=lsLoad('sd_session');
-  if(s&&s.user&&(Date.now()-s.ts)<8*60*60*1000){
-    currentUser=s.user;
-    showApp();
-    init();
-  }
-})();
-
-// ─── DATA ─────────────────────────────────────────────────
+// ─── STEPS ────────────────────────────────────────────────
 var STEPS=[
   {n:1,lbl:'Confirmar com gest\u00e3o o valor do aporte',resp:'Opera\u00e7\u00f5es',prazo:'D+0'},
   {n:2,lbl:'Confirmar data limite de envio wire e subdoc assinado com a casa',resp:'Opera\u00e7\u00f5es',prazo:'D+0'},
@@ -177,50 +154,25 @@ var DF_INV=['Euskadi Investments Ltd.','Olympic Bahamas Ltd.','RM Fund Ltd.','CB
 var DF_IVD=['TERA HF SP','TERA CORE BONDS SP','TERA TREND FOLLOWING SP'];
 var DF_FUNDS={investidor:DF_INV.slice(),investido:DF_IVD.slice(),admins:ADMINS_DEF.slice()};
 
-var S={view:'orders',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null};
+// ─── STATE ────────────────────────────────────────────────
+var S={view:'orders',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false};
 var _ik=false,_saveTimer=null,_refreshTimer=null;
 
+// ─── HELPERS ──────────────────────────────────────────────
+function lsLoad(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function lsSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function showSave(){var b=document.getElementById('save-bar');if(b){b.className='save-bar vis';clearTimeout(_saveTimer);_saveTimer=setTimeout(function(){b.className='save-bar';},2000);}}
 function showErr(){var b=document.getElementById('err-bar');if(b){b.className='err-bar vis';setTimeout(function(){b.className='err-bar';},4000);}}
-
-function init(){
-  S.loading=true;
-  if(_refreshTimer){clearInterval(_refreshTimer);_refreshTimer=null;}
-  fetch(SCRIPT_URL+'?action=getData&t='+Date.now())
-    .then(function(r){return r.text();})
-    .then(function(txt){
-      try{var d=JSON.parse(txt);S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));}
-      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));}
-      S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);
-    })
-    .catch(function(){
-      S.orders=lsLoad('sd_orders')||[];
-      S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));
-      S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);
-    });
-}
-function autoRefresh(){
-  if(S.showForm||S.editId)return;
-  fetch(SCRIPT_URL+'?action=getData&t='+Date.now())
-    .then(function(r){return r.text();})
-    .then(function(txt){
-      try{var d=JSON.parse(txt);var no=JSON.stringify(d.orders||[]);var nf=JSON.stringify(d.funds||{});
-      if(no!==JSON.stringify(S.orders)||nf!==JSON.stringify(S.funds)){S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));R();}}
-      catch(e){}
-    }).catch(function(){});
-}
-function saveO(){lsSave('sd_orders',S.orders);showSave();fetch(SCRIPT_URL+'?action=save&type=orders&data='+encodeURIComponent(JSON.stringify(S.orders))).catch(function(){showErr();});}
-function saveF(){lsSave('sd_funds',S.funds);showSave();fetch(SCRIPT_URL+'?action=save&type=funds&data='+encodeURIComponent(JSON.stringify(S.funds))).catch(function(){showErr();});}
-
-// ─── HELPERS ──────────────────────────────────────────────
+function showLogin(){document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
+function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';var r=document.getElementById('root');if(r)r.innerHTML='<div style="text-align:center;padding:4rem;color:#626367"><div style="font-size:14px;color:#F15D1B;font-weight:600">Carregando...</div></div>';}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
 function pct(o){return Math.round(o.steps.filter(function(s){return s.done;}).length/STEPS.length*100);}
 function ostatus(o){var p=pct(o);return p===100?'Conclu\u00eddo':p===0?'N\u00e3o iniciado':'Em andamento';}
 function bcls(o){var p=pct(o);return p===100?'b-ok':p===0?'b-info':'b-warn';}
 function fmtV(o){if(!o.valor)return'\u2014';if(o.inKind)return o.valor+' shares';try{return new Intl.NumberFormat('pt-BR',{style:'currency',currency:o.moeda||'USD',maximumFractionDigits:0}).format(o.valor);}catch(e){return o.valor;}}
 function fmtNum(v,m){if(!v&&v!==0)return'\u2014';try{return new Intl.NumberFormat('pt-BR',{style:'currency',currency:m||'USD',maximumFractionDigits:0}).format(v);}catch(e){return v;}}
 function fmtD(d){if(!d)return null;var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
 function DL(){return '<datalist id="gest-dl">'+(S.funds.admins||ADMINS_DEF).map(function(g){return '<option value="'+esc(g)+'">';}).join('')+'</datalist>';}
 function LOGO(w,h){return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 90 34" xmlns="http://www.w3.org/2000/svg"><text x="0" y="30" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#4F5053">TER</text><text x="61" y="30" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#F15D1B">A</text></svg>';}
 function wireStatus(o){
@@ -236,6 +188,53 @@ function wireStatus(o){
 }
 function hasDivergence(o){if(!o.valorConfirmado&&o.valorConfirmado!==0)return false;return parseFloat(o.valorConfirmado)!==parseFloat(o.valor);}
 
+// ─── AUTH ─────────────────────────────────────────────────
+document.getElementById('login-btn').onclick=function(){
+  var u=(document.getElementById('l-user').value||'').trim();
+  var p=(document.getElementById('l-pass').value||'').trim();
+  var btn=document.getElementById('login-btn');
+  document.getElementById('login-err').style.display='none';
+  if(!u||!p){document.getElementById('login-err').style.display='block';return;}
+  btn.textContent='Entrando...';btn.disabled=true;
+  fetch(SCRIPT_URL+'?action=login&user='+encodeURIComponent(u)+'&pass='+encodeURIComponent(p)+'&t='+Date.now())
+    .then(function(r){return r.text();})
+    .then(function(txt){
+      var d=JSON.parse(txt);
+      if(d.success){currentUser=d.name;lsSave('sd_session',{user:currentUser,ts:Date.now()});showApp();btn.textContent='Entrar \u2192';btn.disabled=false;init();}
+      else{document.getElementById('login-err').style.display='block';document.getElementById('l-pass').value='';btn.textContent='Entrar \u2192';btn.disabled=false;}
+    })
+    .catch(function(){document.getElementById('login-err').innerHTML='Erro de conex\u00e3o.';document.getElementById('login-err').style.display='block';btn.textContent='Entrar \u2192';btn.disabled=false;});
+};
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')document.getElementById('login-btn').onclick();});
+function logout(){lsSave('sd_session',null);currentUser=null;if(_refreshTimer){clearInterval(_refreshTimer);_refreshTimer=null;}showLogin();}
+(function(){var s=lsLoad('sd_session');if(s&&s.user&&(Date.now()-s.ts)<8*60*60*1000){currentUser=s.user;showApp();init();}})();
+
+// ─── DATA ─────────────────────────────────────────────────
+function init(){
+  S.loading=true;
+  if(_refreshTimer){clearInterval(_refreshTimer);_refreshTimer=null;}
+  fetch(SCRIPT_URL+'?action=getData&t='+Date.now())
+    .then(function(r){return r.text();})
+    .then(function(txt){
+      try{var d=JSON.parse(txt);S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=d.onshore&&d.onshore.length?d.onshore:ON_DEFAULT.slice();}
+      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();}
+      S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);
+    })
+    .catch(function(){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
+}
+function autoRefresh(){
+  if(S.showForm||S.editId||S.onNew||S.onEdit!==null)return;
+  fetch(SCRIPT_URL+'?action=getData&t='+Date.now())
+    .then(function(r){return r.text();})
+    .then(function(txt){
+      try{var d=JSON.parse(txt);var no=JSON.stringify(d.orders||[]);var nf=JSON.stringify(d.funds||{});var non=JSON.stringify(d.onshore||[]);
+      if(no!==JSON.stringify(S.orders)||nf!==JSON.stringify(S.funds)||non!==JSON.stringify(S.onshore)){S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));if(d.onshore&&d.onshore.length)S.onshore=d.onshore;R();}}catch(e){}
+    }).catch(function(){});
+}
+function saveO(){lsSave('sd_orders',S.orders);showSave();fetch(SCRIPT_URL+'?action=save&type=orders&data='+encodeURIComponent(JSON.stringify(S.orders))).catch(function(){showErr();});}
+function saveF(){lsSave('sd_funds',S.funds);showSave();fetch(SCRIPT_URL+'?action=save&type=funds&data='+encodeURIComponent(JSON.stringify(S.funds))).catch(function(){showErr();});}
+function saveOn(){lsSave('sd_onshore',S.onshore);showSave();fetch(SCRIPT_URL+'?action=save&type=onshore&data='+encodeURIComponent(JSON.stringify(S.onshore))).catch(function(){showErr();});}
+
 // ─── RENDER ───────────────────────────────────────────────
 function R(){
   var root=document.getElementById('root');if(!root)return;
@@ -243,18 +242,18 @@ function R(){
   try{
     var h='<div class="nav">'+LOGO(56,22);
     h+='<button class="nb'+(S.view==='orders'?' active':'')+'" onclick="go(\'orders\')">Ordens</button>';
+    h+='<button class="nb'+(S.view==='onshore'?' active':'')+'" onclick="go(\'onshore\')">Base Onshore</button>';
     h+='<button class="nb'+(S.view==='funds'?' active':'')+'" onclick="go(\'funds\')">Fundos</button>';
     h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
     if(S.view==='orders')h+=vOrders();
     else if(S.view==='detail')h+=vDetail();
+    else if(S.view==='onshore')h+=vOnshore();
     else h+=vFunds();
     root.innerHTML=h;
-  }catch(err){
-    root.innerHTML='<div style="padding:2rem;color:#c0392b;background:#FCEBEB;border-radius:8px;margin:1rem">Erro: '+err.message+'<br><br><button class="btn p" onclick="go(\'orders\')">Tentar novamente</button></div>';
-  }
+  }catch(err){root.innerHTML='<div style="padding:2rem;color:#c0392b;background:#FCEBEB;border-radius:8px;margin:1rem">Erro: '+err.message+'<br><br><button class="btn p" onclick="go(\'orders\')">Tentar novamente</button></div>';}
 }
 
-// ─── VIEWS ────────────────────────────────────────────────
+// ─── ORDERS VIEW ──────────────────────────────────────────
 function vOrders(){
   var all=S.orders;
   var concl=all.filter(function(o){return pct(o)===100;}).length;
@@ -269,8 +268,7 @@ function vOrders(){
   else if(fSt==='N\u00e3o iniciado')os=os.filter(function(o){return pct(o)===0;});
   else if(fSt==='Urgente')os=os.filter(function(o){var w=wireStatus(o);return w&&w.cls!=='';});
   var h='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">';
-  h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Offshore &amp; Onshore</div>';
-  h+='<h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Demandas Operations</h1></div>';
+  h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Offshore &amp; Onshore</div><h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Demandas Operations</h1></div>';
   h+='<button class="btn p" onclick="togForm()">+ Nova ordem</button></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.5rem">';
   h+='<div style="background:#4F5053;border-radius:8px;padding:.875rem"><div style="font-size:11px;color:#ccc;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:700">Total</div><div style="font-size:24px;font-weight:700;color:#fff">'+all.length+'</div></div>';
@@ -285,17 +283,14 @@ function vOrders(){
   h+='<select style="width:150px" onchange="setFilter(\'status\',this.value)"><option value="">Todos os status</option><option value="N\u00e3o iniciado">N\u00e3o iniciado</option><option value="Em andamento">Em andamento</option><option value="Conclu\u00eddo">Conclu\u00eddo</option><option value="Urgente">Wire urgente</option></select>';
   if(fFiv||fTipo||fSt)h+='<button class="btn sm" onclick="clearFilters()">Limpar</button>';
   h+='<span style="font-size:12px;color:#888">'+os.length+'/'+all.length+'</span></div>';
-  if(os.length===0){
-    h+='<div style="text-align:center;padding:3rem 1rem;color:#626367;border:1px dashed #ccc;border-radius:12px">'+(all.length===0?'Nenhuma ordem. Clique em <strong style="color:#F15D1B">+ Nova ordem</strong>.':'Nenhuma ordem com esses filtros.')+'</div>';
-  }else{
+  if(os.length===0){h+='<div style="text-align:center;padding:3rem 1rem;color:#626367;border:1px dashed #ccc;border-radius:12px">'+(all.length===0?'Nenhuma ordem. Clique em <strong style="color:#F15D1B">+ Nova ordem</strong>.':'Nenhuma ordem com esses filtros.')+'</div>';}
+  else{
     h+='<div style="display:flex;flex-direction:column;gap:8px">';
     for(var i=0;i<os.length;i++){
       var o=os[i];var p=pct(o);var dn=o.steps.filter(function(s){return s.done;}).length;
       var ws=wireStatus(o);var dv=hasDivergence(o);
       h+='<div class="ord-card'+(ws?' '+ws.cls:'')+'" onclick="openDet(\''+o.id+'\')">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
-      h+='<div><div style="font-weight:600;margin-bottom:3px;font-size:15px;color:#2D2D2D">'+esc(o.fi||'\u2014')+' <span style="color:#F15D1B">&#8594;</span> '+esc(o.fiv||'\u2014')+'</div>';
-      h+='<div style="font-size:13px;color:#626367">'+esc(o.gestora||'\u2014')+(o.inKind?' <span class="badge b-ik">In-Kind</span>':'')+'</div></div>';
+      h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-weight:600;margin-bottom:3px;font-size:15px;color:#2D2D2D">'+esc(o.fi||'\u2014')+' <span style="color:#F15D1B">&#8594;</span> '+esc(o.fiv||'\u2014')+'</div><div style="font-size:13px;color:#626367">'+esc(o.gestora||'\u2014')+(o.inKind?' <span class="badge b-ik">In-Kind</span>':'')+'</div></div>';
       h+='<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">'+(ws?'<span class="badge '+ws.badge+'">'+ws.lbl+'</span>':'')+(dv?'<span class="badge b-red">Diverg\u00eancia</span>':'')+'<span class="badge '+bcls(o)+'">'+ostatus(o)+'</span><span style="font-size:13px;color:#626367">'+esc(o.tipo||'')+'</span></div></div>';
       h+='<div style="display:flex;justify-content:space-between;font-size:13px;color:#626367;margin-bottom:6px"><span style="font-weight:600;color:#2D2D2D">'+fmtV(o)+'</span><span>'+dn+'/'+STEPS.length+' etapas &middot; '+p+'%</span></div>';
       h+='<div class="pb"><div class="pf" style="width:'+p+'%"></div></div></div>';
@@ -305,31 +300,90 @@ function vOrders(){
   return h;
 }
 
-function rForm(isEdit,o){
-  var fi=S.funds.investidor;var fiv=S.funds.investido;
-  var ik=isEdit?o.inKind:_ik;
-  var h='<div class="ifrm" id="order-form">'+DL();
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">';
-  h+='<div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:2px">'+(isEdit?'Editar ordem':'Nova ordem')+'</div>';
-  h+='<span style="font-weight:700;font-size:16px;color:#2D2D2D">Subscription Document</span></div>';
-  h+='<button class="btn sm" onclick="'+(isEdit?'cancelEdit()':'togForm()')+'">Cancelar</button></div>';
-  h+='<div class="fr"><div class="fg"><label>Fundo investidor</label><select id="f-fi"><option value="">Selecione...</option>';
-  fi.forEach(function(f){h+='<option value="'+esc(f)+'"'+(isEdit&&o.fi===f?' selected':'')+'>'+esc(f)+'</option>';});
-  h+='</select></div><div class="fg"><label>Fundo investido</label><select id="f-fiv"><option value="">Selecione...</option>';
-  fiv.forEach(function(f){h+='<option value="'+esc(f)+'"'+(isEdit&&o.fiv===f?' selected':'')+'>'+esc(f)+'</option>';});
-  h+='</select></div></div>';
-  h+='<div class="fg"><label>Gestora / Administradora do fundo investido</label><input type="text" id="f-gest" list="gest-dl" value="'+esc(isEdit?o.gestora||'':'')+'"></div>';
-  h+='<div class="fr"><div class="fg"><label>Tipo</label><select id="f-tipo"><option value="Subscription"'+((!isEdit||o.tipo==='Subscription')?' selected':'')+'>Subscription</option><option value="Redemption"'+(isEdit&&o.tipo==='Redemption'?' selected':'')+'>Redemption</option></select></div>';
-  if(!ik){h+='<div class="fg"><label>Moeda</label><select id="f-moe"><option value="USD"'+((!isEdit||o.moeda==='USD')?' selected':'')+'>USD</option><option value="EUR"'+(isEdit&&o.moeda==='EUR'?' selected':'')+'>EUR</option><option value="BRL"'+(isEdit&&o.moeda==='BRL'?' selected':'')+'>BRL</option></select></div>';}
-  else{h+='<div class="fg"><label>&nbsp;</label><div style="padding:9px 12px;background:#F7F7F7;border-radius:8px;font-size:13px;color:#626367">In-Kind \u2014 sem moeda</div></div>';}
-  h+='</div><div class="fr3"><div class="fg"><label>'+(ik?'Shares':'Valor')+'</label><input type="number" id="f-val" placeholder="0" min="0" value="'+(isEdit?o.valor||0:'')+'"></div>';
-  h+='<div class="fg"><label>Data Limite Wire</label><input type="date" id="f-wire" value="'+(isEdit&&o.wire?o.wire:'')+'"></div>';
-  h+='<div class="fg" style="display:flex;flex-direction:column;justify-content:flex-end"><label>In-Kind</label>';
-  h+='<div class="tog-wrap" onclick="'+(isEdit?'togEditIK(\''+o.id+'\')':'togIK()')+'"><div class="tog'+(ik?' on':'')+'"></div><span style="font-size:14px;color:#2D2D2D">'+(ik?'Sim':'N\u00e3o')+'</span></div></div></div>';
-  h+='<div style="display:flex;justify-content:flex-end"><button class="btn p" style="padding:9px 24px;font-size:14px;font-weight:600" onclick="'+(isEdit?'saveEditOrd(\''+o.id+'\')':'createOrd()')+'">'+( isEdit?'Salvar altera\u00e7\u00f5es':'Criar ordem &#8594;')+'</button></div></div>';
+// ─── ONSHORE VIEW ─────────────────────────────────────────
+function vOnshore(){
+  var src=S.onshore;
+  var q=(S.onSearch||'').toLowerCase();
+  var filtered=q?src.filter(function(r){return r[0]&&r[0].toLowerCase().indexOf(q)>=0||r[1]&&r[1].toLowerCase().indexOf(q)>=0||r[6]&&r[6].toLowerCase().indexOf(q)>=0;}):src;
+
+  var h='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">';
+  h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Cadastro de Fundos</div>';
+  h+='<h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Base Onshore</h1></div>';
+  h+='<button class="btn p" onclick="onNewFund()">+ Novo fundo</button></div>';
+
+  if(S.onNew){h+=onForm(false,null);}
+
+  h+='<div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center">';
+  h+='<input type="text" id="on-search" placeholder="Buscar por nome, administrador ou CNPJ..." style="max-width:400px;font-size:14px;padding:8px 12px" value="'+esc(S.onSearch||'')+'" oninput="onSearch(this.value)">';
+  h+='<span style="font-size:12px;color:#888">'+filtered.length+' de '+src.length+' fundos</span></div>';
+
+  if(S.onDetail!==null&&!S.onEdit){
+    var row=src[S.onDetail];
+    h+='<div class="card" style="margin-bottom:1rem;border-top:3px solid #F15D1B">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">';
+    h+='<div><div style="font-size:11px;color:#F15D1B;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Detalhes do fundo</div>';
+    h+='<h2 style="font-size:15px;font-weight:700;color:#2D2D2D">'+esc(row[0]||'')+'</h2></div>';
+    h+='<div style="display:flex;gap:6px"><button class="btn sm" onclick="onEditFund('+S.onDetail+')" style="font-size:15px;padding:4px 10px">&#9998;</button>';
+    h+='<button class="btn sm dr" onclick="onDelFund('+S.onDetail+')">Excluir</button>';
+    h+='<button class="btn sm" onclick="closeOnDetail()">&#10005; Fechar</button></div></div>';
+    h+='<div class="detail-grid">';
+    for(var c=0;c<ON_COLS.length;c++){
+      h+='<div class="detail-item"><label>'+esc(ON_COLS[c])+'</label><span>'+esc(row[c]||'\u2014')+'</span></div>';
+    }
+    h+='</div></div>';
+  }
+
+  if(S.onEdit!==null){h+=onForm(true,src[S.onEdit]);}
+
+  h+='<div class="tbl-wrap"><table class="tbl"><thead><tr>';
+  h+='<th>Fundo</th><th>Administrador</th><th>Gestor</th><th>CNPJ</th><th>Condom\u00ednio</th><th>Class. CVM</th><th>Tributa\u00e7\u00e3o</th><th>Data In\u00edcio</th><th style="width:40px"></th></tr></thead><tbody>';
+  if(filtered.length===0){h+='<tr><td colspan="9" style="text-align:center;padding:2rem;color:#888">Nenhum fundo encontrado.</td></tr>';}
+  for(var i=0;i<filtered.length;i++){
+    var r=filtered[i];
+    var realIdx=src.indexOf(r);
+    var isOpen=S.onDetail===realIdx;
+    h+='<tr style="'+(isOpen?'background:#FDE8DC33;':'')+'" onclick="onOpenDetail('+realIdx+')">';
+    h+='<td style="font-weight:600;color:#2D2D2D;max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r[0]||'')+'</td>';
+    h+='<td style="white-space:nowrap">'+esc(r[1]||'')+'</td>';
+    h+='<td style="white-space:nowrap">'+esc(r[2]||'')+'</td>';
+    h+='<td style="white-space:nowrap;font-family:monospace;font-size:12px">'+esc(r[6]||'')+'</td>';
+    h+='<td><span class="badge '+(r[16]==='ABERTO'?'b-ok':r[16]==='FECHADO'?'b-no':'b-warn')+'">'+esc(r[16]||'')+'</span></td>';
+    h+='<td>'+esc(r[25]||'')+'</td>';
+    h+='<td>'+esc(r[5]||'')+'</td>';
+    h+='<td style="white-space:nowrap">'+esc(r[18]||'')+'</td>';
+    h+='<td onclick="event.stopPropagation()"><button class="btn sm dr" onclick="onDelFund('+realIdx+')" style="padding:2px 6px">&times;</button></td></tr>';
+  }
+  h+='</tbody></table></div>';
   return h;
 }
 
+function onForm(isEdit,row){
+  var vals=isEdit?row:new Array(ON_COLS.length).fill('');
+  var h='<div class="ifrm" style="margin-bottom:1rem">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">';
+  h+='<span style="font-weight:700;font-size:15px;color:#F15D1B">'+(isEdit?'&#9998; Editando fundo':'+ Novo fundo')+'</span>';
+  h+='<button class="btn sm" onclick="'+(isEdit?'cancelOnEdit()':'cancelOnNew()')+'">Cancelar</button></div>';
+  var groups=[
+    [0,1,2,3,4,5],
+    [6,7,8,9,10,11,12,13],
+    [14,15,16,17,18,19,20,21],
+    [22,23,24,25,26],
+    [27,28,29,30,31,32,33]
+  ];
+  for(var g=0;g<groups.length;g++){
+    h+='<div class="fr" style="grid-template-columns:repeat('+Math.min(groups[g].length,3)+',1fr)">';
+    for(var k=0;k<groups[g].length;k++){
+      var ci=groups[g][k];
+      h+='<div class="fg"><label>'+esc(ON_COLS[ci])+'</label><input type="text" id="onf-'+ci+'" value="'+esc(vals[ci]||'')+'"></div>';
+    }
+    h+='</div>';
+  }
+  h+='<div style="display:flex;justify-content:flex-end">';
+  h+='<button class="btn p" style="padding:9px 24px;font-size:14px;font-weight:600" onclick="'+(isEdit?'saveOnEdit()':'saveOnNew()')+'">'+( isEdit?'Salvar altera\u00e7\u00f5es':'Adicionar fundo')+'</button></div></div>';
+  return h;
+}
+
+// ─── DETAIL VIEW ──────────────────────────────────────────
 function vDetail(){
   var o=null;for(var i=0;i<S.orders.length;i++){if(S.orders[i].id===S.selId){o=S.orders[i];break;}}
   if(!o){go('orders');return'';}
@@ -341,9 +395,8 @@ function vDetail(){
   h+='<h1 style="font-size:16px;font-weight:700;color:#2D2D2D">'+esc(o.fi||'\u2014')+' <span style="color:#F15D1B">&#8594;</span> '+esc(o.fiv||'\u2014')+'</h1></div>';
   h+='<button class="btn sm" onclick="startEdit(\''+o.id+'\')" style="font-size:16px;padding:4px 10px">&#9998;</button>';
   h+='<button class="btn sm dr" onclick="delOrd(\''+o.id+'\')">Excluir</button></div>';
-  if(S.editId===o.id){
-    h+=rForm(true,o);
-  }else{
+  if(S.editId===o.id){h+=rForm(true,o);}
+  else{
     h+='<div class="card" style="margin-bottom:1rem;border-top:3px solid #F15D1B">';
     h+='<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px">';
     h+='<div><label style="font-weight:700">Fundo investidor</label><span style="font-size:15px;color:#2D2D2D">'+esc(o.fi||'\u2014')+'</span></div>';
@@ -356,9 +409,7 @@ function vDetail(){
     h+='<div><label style="font-weight:700">Data Limite Wire</label><span style="font-size:15px;color:'+(ws&&ws.cls?'#A32D2D':'#2D2D2D')+'">'+(fmtD(o.wire)||'\u2014')+(ws?' <span class="badge '+ws.badge+'">'+ws.lbl+'</span>':'')+'</span></div>';
     h+='<div><label style="font-weight:700">In-Kind</label><span class="badge '+(o.inKind?'b-ik':'b-no')+'">'+(o.inKind?'Sim':'N\u00e3o')+'</span></div></div>';
     h+='<div style="border-top:1px solid #e0e0e0;padding-top:12px"><label style="font-weight:700">Valor confirmado pela contraparte</label>';
-    h+='<div style="display:flex;gap:10px;align-items:center;margin-top:4px"><input type="number" style="max-width:220px" placeholder="Digite o valor confirmado..." value="'+(o.valorConfirmado||'')+'" onchange="updConfirmado(\''+o.id+'\',this.value)">';
-    h+=(o.valorConfirmado?'<span style="font-size:15px;font-weight:500;color:#2D2D2D">'+fmtNum(o.valorConfirmado,o.moeda)+'</span>':'');
-    h+='</div>';
+    h+='<div style="display:flex;gap:10px;align-items:center;margin-top:4px"><input type="number" style="max-width:220px" placeholder="Digite o valor confirmado..." value="'+(o.valorConfirmado||'')+'" onchange="updConfirmado(\''+o.id+'\',this.value)">'+(o.valorConfirmado?'<span style="font-size:15px;font-weight:500;color:#2D2D2D">'+fmtNum(o.valorConfirmado,o.moeda)+'</span>':'')+'</div>';
     if(dv)h+='<div class="div-alert">&#9888; Diverg\u00eancia: enviado '+fmtV(o)+' &middot; confirmado '+fmtNum(o.valorConfirmado,o.moeda)+'</div>';
     h+='</div></div>';
   }
@@ -375,8 +426,7 @@ function vDetail(){
     else if(dist>=3)ist='transform:scale(0.96);opacity:0.35;filter:blur(2px);';
     h+='<div class="step-item'+(isActive?' s-active':'')+(st.done?' s-done':'')+'" style="'+ist+'" onclick="setFocus('+i+')">';
     h+='<div style="display:flex;align-items:flex-start;gap:10px"><div class="snum'+(st.done?' dn':'')+'">'+s.n+'</div>';
-    h+='<div style="flex:1"><div style="display:flex;align-items:flex-start;gap:8px">';
-    h+='<input type="checkbox" style="margin-top:3px" '+(st.done?'checked':'')+' onchange="togStep(\''+o.id+'\','+i+',this.checked)" onclick="event.stopPropagation()">';
+    h+='<div style="flex:1"><div style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" style="margin-top:3px" '+(st.done?'checked':'')+' onchange="togStep(\''+o.id+'\','+i+',this.checked)" onclick="event.stopPropagation()">';
     h+='<span style="font-size:'+(isActive?'15px':'14px')+';font-weight:'+(isActive?'600':'400')+';line-height:1.5;color:'+(st.done?'#aaa':'#2D2D2D')+';'+(st.done?'text-decoration:line-through;':'')+'">'+esc(s.lbl)+'</span></div>';
     h+='<div style="font-size:12px;color:#626367;margin-top:4px;margin-left:24px"><span class="tag">'+s.resp+'</span>'+esc(s.prazo)+'</div>';
     if(st.obs&&!isActive)h+='<div style="font-size:12px;color:#626367;margin-top:4px;margin-left:24px;font-style:italic">'+esc(st.obs)+'</div>';
@@ -387,44 +437,51 @@ function vDetail(){
   return h;
 }
 
+function rForm(isEdit,o){
+  var fi=S.funds.investidor;var fiv=S.funds.investido;
+  var ik=isEdit?o.inKind:_ik;
+  var h='<div class="ifrm" id="order-form">'+DL();
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem"><div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:2px">'+(isEdit?'Editar ordem':'Nova ordem')+'</div><span style="font-weight:700;font-size:16px;color:#2D2D2D">Subscription Document</span></div><button class="btn sm" onclick="'+(isEdit?'cancelEdit()':'togForm()')+'">Cancelar</button></div>';
+  h+='<div class="fr"><div class="fg"><label>Fundo investidor</label><select id="f-fi"><option value="">Selecione...</option>';
+  fi.forEach(function(f){h+='<option value="'+esc(f)+'"'+(isEdit&&o.fi===f?' selected':'')+'>'+esc(f)+'</option>';});
+  h+='</select></div><div class="fg"><label>Fundo investido</label><select id="f-fiv"><option value="">Selecione...</option>';
+  fiv.forEach(function(f){h+='<option value="'+esc(f)+'"'+(isEdit&&o.fiv===f?' selected':'')+'>'+esc(f)+'</option>';});
+  h+='</select></div></div>';
+  h+='<div class="fg"><label>Gestora / Administradora do fundo investido</label><input type="text" id="f-gest" list="gest-dl" value="'+esc(isEdit?o.gestora||'':'')+'"></div>';
+  h+='<div class="fr"><div class="fg"><label>Tipo</label><select id="f-tipo"><option value="Subscription"'+((!isEdit||o.tipo==='Subscription')?' selected':'')+'>Subscription</option><option value="Redemption"'+(isEdit&&o.tipo==='Redemption'?' selected':'')+'>Redemption</option></select></div>';
+  if(!ik){h+='<div class="fg"><label>Moeda</label><select id="f-moe"><option value="USD"'+((!isEdit||o.moeda==='USD')?' selected':'')+'>USD</option><option value="EUR"'+(isEdit&&o.moeda==='EUR'?' selected':'')+'>EUR</option><option value="BRL"'+(isEdit&&o.moeda==='BRL'?' selected':'')+'>BRL</option></select></div>';}
+  else{h+='<div class="fg"><label>&nbsp;</label><div style="padding:9px 12px;background:#F7F7F7;border-radius:8px;font-size:13px;color:#626367">In-Kind \u2014 sem moeda</div></div>';}
+  h+='</div><div class="fr3"><div class="fg"><label>'+(ik?'Shares':'Valor')+'</label><input type="number" id="f-val" placeholder="0" min="0" value="'+(isEdit?o.valor||0:'')+'"></div>';
+  h+='<div class="fg"><label>Data Limite Wire</label><input type="date" id="f-wire" value="'+(isEdit&&o.wire?o.wire:'')+'"></div>';
+  h+='<div class="fg" style="display:flex;flex-direction:column;justify-content:flex-end"><label>In-Kind</label><div class="tog-wrap" onclick="'+(isEdit?'togEditIK(\''+o.id+'\')':'togIK()')+'"><div class="tog'+(ik?' on':'')+'"></div><span style="font-size:14px;color:#2D2D2D">'+(ik?'Sim':'N\u00e3o')+'</span></div></div></div>';
+  h+='<div style="display:flex;justify-content:flex-end"><button class="btn p" style="padding:9px 24px;font-size:14px;font-weight:600" onclick="'+(isEdit?'saveEditOrd(\''+o.id+'\')':'createOrd()')+'">'+( isEdit?'Salvar altera\u00e7\u00f5es':'Criar ordem &#8594;')+'</button></div></div>';
+  return h;
+}
+
 function vFunds(){
-  var h='<div style="margin-bottom:1.5rem"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Configura\u00e7\u00f5es</div>';
-  h+='<h1 style="font-size:22px;font-weight:700;color:#2D2D2D">Gerenciar fundos</h1></div>';
+  var h='<div style="margin-bottom:1.5rem"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Configura\u00e7\u00f5es</div><h1 style="font-size:22px;font-weight:700;color:#2D2D2D">Gerenciar fundos</h1></div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
   var keys=[['investidor','Fundos investidores'],['investido','Fundos investidos']];
   for(var k=0;k<keys.length;k++){
     var key=keys[k][0],lbl=keys[k][1],lst=S.funds[key]||[];
-    h+='<div class="card" style="border-top:3px solid #F15D1B"><div style="font-weight:700;color:#4F5053;margin-bottom:12px;font-size:15px">'+lbl+'</div>';
-    h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">';
-    for(var i=0;i<lst.length;i++){
-      h+='<div style="display:flex;gap:6px"><input type="text" value="'+esc(lst[i])+'" onchange="editF(\''+key+'\','+i+',this.value)"><button class="btn sm" style="flex-shrink:0" onclick="rmvF(\''+key+'\','+i+')">&times;</button></div>';
-    }
+    h+='<div class="card" style="border-top:3px solid #F15D1B"><div style="font-weight:700;color:#4F5053;margin-bottom:12px;font-size:15px">'+lbl+'</div><div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">';
+    for(var i=0;i<lst.length;i++){h+='<div style="display:flex;gap:6px"><input type="text" value="'+esc(lst[i])+'" onchange="editF(\''+key+'\','+i+',this.value)"><button class="btn sm" style="flex-shrink:0" onclick="rmvF(\''+key+'\','+i+')">&times;</button></div>';}
     h+='</div><button class="btn sm" onclick="addF(\''+key+'\')">+ Adicionar</button></div>';
   }
   h+='</div>';
   var admins=S.funds.admins||[];
-  h+='<div class="card" style="border-top:3px solid #F15D1B"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
-  h+='<div style="font-weight:700;color:#4F5053;font-size:15px">Gestoras / Administradoras <span style="font-size:12px;color:#888;font-weight:400">('+admins.length+')</span></div>';
-  h+='<button class="btn sm" onclick="addAdm()">+ Adicionar</button></div>';
+  h+='<div class="card" style="border-top:3px solid #F15D1B"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:700;color:#4F5053;font-size:15px">Gestoras / Administradoras <span style="font-size:12px;color:#888;font-weight:400">('+admins.length+')</span></div><button class="btn sm" onclick="addAdm()">+ Adicionar</button></div>';
   h+='<div id="adm-new"></div><div style="display:flex;flex-wrap:wrap;gap:6px">';
-  for(var i=0;i<admins.length;i++){
-    h+='<div style="display:inline-flex;align-items:center;gap:4px;background:#F7F7F7;border:1px solid #e0e0e0;border-radius:20px;padding:3px 10px;font-size:12px"><span>'+esc(admins[i])+'</span><button onclick="rmvF(\'admins\','+i+')" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;padding:0;line-height:1">&times;</button></div>';
-  }
-  h+='</div></div>';
-  h+='<p style="font-size:13px;color:#626367;margin-top:1rem">Edite fundos diretamente. Salvo automaticamente.</p>';
+  for(var i=0;i<admins.length;i++){h+='<div style="display:inline-flex;align-items:center;gap:4px;background:#F7F7F7;border:1px solid #e0e0e0;border-radius:20px;padding:3px 10px;font-size:12px"><span>'+esc(admins[i])+'</span><button onclick="rmvF(\'admins\','+i+')" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;padding:0;line-height:1">&times;</button></div>';}
+  h+='</div></div><p style="font-size:13px;color:#626367;margin-top:1rem">Edite fundos diretamente. Salvo automaticamente.</p>';
   return h;
 }
 
 // ─── ACTIONS ──────────────────────────────────────────────
-function go(v){S.view=v;S.showForm=false;S.editId=null;R();}
+function go(v){S.view=v;S.showForm=false;S.editId=null;S.onDetail=null;S.onEdit=null;S.onNew=false;R();}
 function setFilter(k,v){S.filters[k]=v;R();}
 function clearFilters(){S.filters={fiv:'',tipo:'',status:''};R();}
-function openDet(id){
-  S.selId=id;S.view='detail';S.editId=null;
-  var o=null;for(var i=0;i<S.orders.length;i++){if(S.orders[i].id===id){o=S.orders[i];break;}}
-  if(o){var idx=-1;for(var j=0;j<o.steps.length;j++){if(!o.steps[j].done){idx=j;break;}}S.focusStep=idx<0?0:idx;}
-  R();
-}
+function openDet(id){S.selId=id;S.view='detail';S.editId=null;var o=null;for(var i=0;i<S.orders.length;i++){if(S.orders[i].id===id){o=S.orders[i];break;}}if(o){var idx=-1;for(var j=0;j<o.steps.length;j++){if(!o.steps[j].done){idx=j;break;}}S.focusStep=idx<0?0:idx;}R();}
 function togForm(){S.showForm=!S.showForm;_ik=false;R();if(S.showForm)setTimeout(function(){var f=document.getElementById('order-form');if(f)f.scrollIntoView({behavior:'smooth',block:'start'});},60);}
 function togIK(){_ik=!_ik;R();}
 function togEditIK(id){for(var i=0;i<S.orders.length;i++){if(S.orders[i].id===id){S.orders[i].inKind=!S.orders[i].inKind;break;}}R();}
@@ -433,26 +490,12 @@ function navStep(i){if(i>=0&&i<STEPS.length){S.focusStep=i;R();}}
 function startEdit(id){S.editId=id;R();}
 function cancelEdit(){S.editId=null;R();}
 function createOrd(){
-  var ik=_ik;
-  var moe=document.getElementById('f-moe');
+  var ik=_ik;var moe=document.getElementById('f-moe');
   var o={id:uid(),fi:document.getElementById('f-fi').value,fiv:document.getElementById('f-fiv').value,gestora:document.getElementById('f-gest').value.trim(),tipo:document.getElementById('f-tipo').value,valor:parseFloat(document.getElementById('f-val').value)||0,moeda:ik?'SHARES':(moe?moe.value:'USD'),wire:document.getElementById('f-wire').value||null,inKind:ik,valorConfirmado:null,steps:STEPS.map(function(){return{done:false,obs:''};},this),createdAt:new Date().toISOString()};
   S.orders.unshift(o);S.showForm=false;saveO();R();
 }
 function saveEditOrd(id){
-  for(var i=0;i<S.orders.length;i++){
-    if(S.orders[i].id===id){
-      var o=S.orders[i];
-      o.fi=document.getElementById('f-fi').value;
-      o.fiv=document.getElementById('f-fiv').value;
-      o.gestora=document.getElementById('f-gest').value.trim();
-      o.tipo=document.getElementById('f-tipo').value;
-      o.valor=parseFloat(document.getElementById('f-val').value)||0;
-      var moe=document.getElementById('f-moe');
-      o.moeda=o.inKind?'SHARES':(moe?moe.value:'USD');
-      o.wire=document.getElementById('f-wire').value||null;
-      break;
-    }
-  }
+  for(var i=0;i<S.orders.length;i++){if(S.orders[i].id===id){var o=S.orders[i];o.fi=document.getElementById('f-fi').value;o.fiv=document.getElementById('f-fiv').value;o.gestora=document.getElementById('f-gest').value.trim();o.tipo=document.getElementById('f-tipo').value;o.valor=parseFloat(document.getElementById('f-val').value)||0;var moe=document.getElementById('f-moe');o.moeda=o.inKind?'SHARES':(moe?moe.value:'USD');o.wire=document.getElementById('f-wire').value||null;break;}}
   S.editId=null;saveO();R();
 }
 function delOrd(id){S.orders=S.orders.filter(function(o){return o.id!==id;});S.view='orders';S.editId=null;saveO();R();}
@@ -465,6 +508,27 @@ function editF(t,i,v){if(S.funds[t])S.funds[t][i]=v;saveF();}
 function rmvF(t,i){if(S.funds[t])S.funds[t].splice(i,1);saveF();R();}
 function addAdm(){var c=document.getElementById('adm-new');if(!c||c.innerHTML)return;c.innerHTML='<div style="display:flex;gap:6px;margin-bottom:10px"><input type="text" id="adm-input" placeholder="Nome da gestora/administradora..." style="flex:1"><button class="btn sm p" onclick="saveAdm()">Adicionar</button></div>';setTimeout(function(){var el=document.getElementById('adm-input');if(el)el.focus();},50);}
 function saveAdm(){var el=document.getElementById('adm-input');if(!el)return;var v=el.value.trim();if(!v)return;if(!S.funds.admins)S.funds.admins=[];S.funds.admins.push(v);saveF();R();}
+
+// ─── ONSHORE ACTIONS ──────────────────────────────────────
+function onSearch(v){S.onSearch=v;S.onDetail=null;R();}
+function onOpenDetail(i){S.onDetail=S.onDetail===i?null:i;S.onEdit=null;R();}
+function closeOnDetail(){S.onDetail=null;R();}
+function onNewFund(){S.onNew=true;S.onDetail=null;S.onEdit=null;R();setTimeout(function(){var f=document.getElementById('order-form')||document.querySelector('.ifrm');if(f)f.scrollIntoView({behavior:'smooth',block:'start'});},60);}
+function cancelOnNew(){S.onNew=false;R();}
+function saveOnNew(){
+  var row=[];
+  for(var i=0;i<ON_COLS.length;i++){var el=document.getElementById('onf-'+i);row.push(el?el.value.trim():'');}
+  S.onshore.push(row);S.onNew=false;saveOn();R();
+}
+function onEditFund(i){S.onEdit=i;S.onDetail=null;R();}
+function cancelOnEdit(){S.onEdit=null;R();}
+function saveOnEdit(){
+  var i=S.onEdit;if(i===null)return;
+  var row=[];
+  for(var c=0;c<ON_COLS.length;c++){var el=document.getElementById('onf-'+c);row.push(el?el.value.trim():'');}
+  S.onshore[i]=row;S.onEdit=null;saveOn();R();
+}
+function onDelFund(i){if(!confirm('Excluir este fundo da Base Onshore?'))return;S.onshore.splice(i,1);S.onDetail=null;S.onEdit=null;saveOn();R();}
 </script>
 </body>
 </html>

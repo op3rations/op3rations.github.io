@@ -238,7 +238,7 @@ function saveDocs(){lsSave('sd_docs',S.docs);showSave();fetch(SCRIPT_URL+'?actio
 
 function vDocs(){
   var cats=['Manuais','Wire Instructions','Cotas Onshore'];
-  var icons={'Manuais':'&#128218;','Wire Instructions':'&#128199;','Cotas Onshore':'&#128202;'};
+  var icons={'Manuais':'','Wire Instructions':'','Cotas Onshore':''};
   var h='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">';
   h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Reposit&oacute;rio</div>';
   h+='<h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Documentos</h1></div>';
@@ -249,7 +249,6 @@ function vDocs(){
     var docs=S.docs.filter(function(d){return d.cat===cat;});
     h+='<div style="margin-bottom:1.5rem">';
     h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #F15D1B">';
-    h+='<span style="font-size:18px">'+icons[cat]+'</span>';
     h+='<h2 style="font-size:17px;font-weight:700;color:#2D2D2D">'+cat+'</h2>';
     h+='<span style="font-size:12px;color:#888;font-weight:400">('+docs.length+')</span></div>';
     if(docs.length===0){
@@ -260,7 +259,7 @@ function vDocs(){
         var d=docs[i];var realIdx=S.docs.indexOf(d);
         if(S.docEdit===realIdx){h+=docForm(true,d);continue;}
         h+='<div class="card" style="display:flex;align-items:center;gap:12px">';
-        h+='<div style="font-size:28px">'+docIcon(d.nome)+'</div>';
+        h+='<div style="font-size:24px;color:#626367">&#128196;</div>';
         h+='<div style="flex:1"><div style="font-weight:600;font-size:14px;color:#2D2D2D">'+esc(d.nome)+'</div>';
         h+='<div style="font-size:12px;color:#626367;margin-top:2px">'+esc(d.desc||'')+'</div></div>';
         h+='<div style="display:flex;gap:6px;flex-shrink:0">';

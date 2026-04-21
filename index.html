@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Demandas Operations</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='75' font-family='Arial' font-size='72' font-weight='900' letter-spacing='-5' fill='%23F15D1B' text-anchor='middle'>OPS</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='80' font-size='90' font-family='Arial' font-weight='100' fill='%23F15D1B' text-anchor='middle'%3EO%3C/text%3E%3C/svg%3E">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2D2D2D;font-size:16px;line-height:1.6;background:#F7F7F7;padding:1rem}
@@ -218,13 +218,13 @@ function init(){
     .then(function(r){return r.text();})
     .then(function(txt){
       try{var d=JSON.parse(txt);S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));if(!S.funds.admins||S.funds.admins.length===0)S.funds.admins=ADMINS_DEF.slice();S.onshore=d.onshore&&d.onshore.length?d.onshore:ON_DEFAULT.slice();S.docs=d.docs||[];}
-      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];}
+      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));if(!S.funds.admins||!S.funds.admins.length)S.funds.admins=ADMINS_DEF.slice();S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];}
       S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);
     })
     .catch(function(){      S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
 }
 function autoRefresh(){
-  if(S.showForm||S.editId||S.onNew||S.onEdit!==null||S.view==='onshore'||S.view==='docs'||S.view==='email'||S.view==='detail'||S.docNew||S.docEdit!==null)return;
+  if(S.showForm||S.editId||S.onNew||S.onEdit!==null||S.view==='onshore'||S.view==='docs'||S.view==='email'||S.view==='detail'||S.view==='funds'||S.docNew||S.docEdit!==null)return;
   fetch(SCRIPT_URL+'?action=getData&t='+Date.now())
     .then(function(r){return r.text();})
     .then(function(txt){

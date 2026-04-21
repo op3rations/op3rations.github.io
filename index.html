@@ -626,20 +626,42 @@ function rForm(isEdit,o){
 
 function vFunds(){
   var h='<div style="margin-bottom:1.5rem"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Configura\u00e7\u00f5es</div><h1 style="font-size:22px;font-weight:700;color:#2D2D2D">Gerenciar fundos</h1></div>';
+
+  // Fundos investidores e investidos
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
   var keys=[['investidor','Fundos investidores'],['investido','Fundos investidos']];
   for(var k=0;k<keys.length;k++){
     var key=keys[k][0],lbl=keys[k][1],lst=S.funds[key]||[];
-    h+='<div class="card" style="border-top:3px solid #F15D1B"><div style="font-weight:700;color:#4F5053;margin-bottom:12px;font-size:15px">'+lbl+'</div><div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">';
-    for(var i=0;i<lst.length;i++){h+='<div style="display:flex;gap:6px"><input type="text" value="'+esc(lst[i])+'" onchange="editF(\''+key+'\','+i+',this.value)"><button class="btn sm" style="flex-shrink:0" onclick="rmvF(\''+key+'\','+i+')">&times;</button></div>';}
+    h+='<div class="card" style="border-top:3px solid #F15D1B"><div style="font-weight:700;color:#4F5053;margin-bottom:12px;font-size:15px">'+lbl+' <span style="font-size:12px;color:#888;font-weight:400">('+lst.length+')</span></div>';
+    h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">';
+    for(var i=0;i<lst.length;i++){
+      h+='<div style="display:flex;gap:6px"><input type="text" value="'+esc(lst[i])+'" onchange="editF(\''+key+'\','+i+',this.value)"><button class="btn sm" style="flex-shrink:0" onclick="rmvF(\''+key+'\','+i+')">&times;</button></div>';
+    }
     h+='</div><button class="btn sm" onclick="addF(\''+key+'\')">+ Adicionar</button></div>';
   }
   h+='</div>';
+
+  // Gestoras em busca + lista compacta
   var admins=S.funds.admins||[];
-  h+='<div class="card" style="border-top:3px solid #F15D1B"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:700;color:#4F5053;font-size:15px">Gestoras / Administradoras <span style="font-size:12px;color:#888;font-weight:400">('+admins.length+')</span></div><button class="btn sm" onclick="addAdm()">+ Adicionar</button></div>';
-  h+='<div id="adm-new"></div><div style="display:flex;flex-wrap:wrap;gap:6px">';
-  for(var i=0;i<admins.length;i++){h+='<div style="display:inline-flex;align-items:center;gap:4px;background:#F7F7F7;border:1px solid #e0e0e0;border-radius:20px;padding:3px 10px;font-size:12px"><span>'+esc(admins[i])+'</span><button onclick="rmvF(\'admins\','+i+')" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;padding:0;line-height:1">&times;</button></div>';}
-  h+='</div></div><p style="font-size:13px;color:#626367;margin-top:1rem">Edite fundos diretamente. Salvo automaticamente.</p>';
+  var admQ=(S.admSearch||'').toLowerCase();
+  var admFiltered=admQ?admins.filter(function(a){return a.toLowerCase().indexOf(admQ)>=0;}):admins;
+  h+='<div class="card" style="border-top:3px solid #F15D1B">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
+  h+='<div style="font-weight:700;color:#4F5053;font-size:15px">Gestoras / Administradoras <span style="font-size:12px;color:#888;font-weight:400">('+admins.length+')</span></div>';
+  h+='<button class="btn sm" onclick="addAdm()">+ Adicionar</button></div>';
+  h+='<input type="text" id="adm-search" placeholder="Buscar gestora..." style="margin-bottom:10px;font-size:13px;padding:6px 10px" value="'+esc(S.admSearch||'')+'" oninput="admSearch(this.value)">';
+  h+='<div id="adm-new"></div>';
+  h+='<div style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">';
+  for(var i=0;i<admFiltered.length;i++){
+    var realIdx=admins.indexOf(admFiltered[i]);
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;background:#F7F7F7">';
+    h+='<span style="flex:1;font-size:13px">'+esc(admFiltered[i])+'</span>';
+    h+='<button class="btn sm" onclick="admEditInline('+realIdx+')" style="padding:2px 7px;font-size:12px">&#9998;</button>';
+    h+='<button onclick="rmvF(\'admins\','+realIdx+')" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:16px;padding:0 4px;line-height:1">&times;</button></div>';
+  }
+  if(admFiltered.length===0)h+='<div style="color:#888;font-size:13px;padding:8px">Nenhuma gestora encontrada.</div>';
+  h+='</div></div>';
+  h+='<p style="font-size:13px;color:#626367;margin-top:1rem">Edite fundos diretamente. Salvo automaticamente.</p>';
   return h;
 }
 
@@ -684,11 +706,23 @@ function resetSt(id){for(var i=0;i<S.orders.length;i++){if(S.orders[i].id===id){
 function addF(t){if(!S.funds[t])S.funds[t]=[];S.funds[t].push('');saveF();R();}
 function editF(t,i,v){if(S.funds[t])S.funds[t][i]=v;saveF();}
 function rmvF(t,i){if(S.funds[t])S.funds[t].splice(i,1);saveF();R();}
+var _admSearchTimer=null;
+function admSearch(v){S.admSearch=v;clearTimeout(_admSearchTimer);_admSearchTimer=setTimeout(function(){R();},300);}
+function admEditInline(i){
+  var v=prompt('Editar gestora:',S.funds.admins[i]);
+  if(v===null)return;
+  S.funds.admins[i]=v.trim();saveF();R();
+}
 function addAdm(){var c=document.getElementById('adm-new');if(!c||c.innerHTML)return;c.innerHTML='<div style="display:flex;gap:6px;margin-bottom:10px"><input type="text" id="adm-input" placeholder="Nome da gestora/administradora..." style="flex:1"><button class="btn sm p" onclick="saveAdm()">Adicionar</button></div>';setTimeout(function(){var el=document.getElementById('adm-input');if(el)el.focus();},50);}
 function saveAdm(){var el=document.getElementById('adm-input');if(!el)return;var v=el.value.trim();if(!v)return;if(!S.funds.admins)S.funds.admins=[];S.funds.admins.push(v);saveF();R();}
 
 // ─── ONSHORE ACTIONS ──────────────────────────────────────
-function onSearch(v){S.onSearch=v;S.onDetail=null;R();}
+var _searchTimer=null;
+function onSearch(v){
+  S.onSearch=v;
+  clearTimeout(_searchTimer);
+  _searchTimer=setTimeout(function(){R();},400);
+}
 function onOpenDetail(i){S.onDetail=S.onDetail===i?null:i;S.onEdit=null;R();}
 function closeOnDetail(){S.onDetail=null;R();}
 function onNewFund(){S.onNew=true;S.onDetail=null;S.onEdit=null;R();setTimeout(function(){var f=document.getElementById('order-form')||document.querySelector('.ifrm');if(f)f.scrollIntoView({behavior:'smooth',block:'start'});},60);}

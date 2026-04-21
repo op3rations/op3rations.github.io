@@ -224,7 +224,7 @@ function init(){
     .catch(function(){      S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
 }
 function autoRefresh(){
-  if(S.showForm||S.editId||S.onNew||S.onEdit!==null||S.view==='onshore'||S.view==='docs'||S.view==='email'||S.view==='detail'||S.view==='funds'||S.docNew||S.docEdit!==null)return;
+  if(S.showForm||S.editId||S.onNew||S.onEdit!==null||S.view==='onshore'||S.view==='docs'||S.view==='email'||S.view==='detail'||S.view==='funds'||S.view==='orders'||S.docNew||S.docEdit!==null)return;
   fetch(SCRIPT_URL+'?action=getData&t='+Date.now())
     .then(function(r){return r.text();})
     .then(function(txt){

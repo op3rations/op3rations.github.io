@@ -163,7 +163,7 @@ var _ik=false,_saveTimer=null,_refreshTimer=null;
 function lsLoad(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function lsSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function showSave(){var b=document.getElementById('save-bar');if(b){b.className='save-bar vis';clearTimeout(_saveTimer);_saveTimer=setTimeout(function(){b.className='save-bar';},2000);}}
-function showErr(){var b=document.getElementById('err-bar');if(b){b.className='err-bar vis';setTimeout(function(){b.className='err-bar';},4000);}}
+function showErr(type){var b=document.getElementById('err-bar');if(b){var lbl=type==='orders'?'ordens':type==='funds'?'fundos':type==='docs'?'documentos':'dados';b.textContent='Erro ao salvar '+lbl+' no servidor (backup local OK)';b.className='err-bar vis';setTimeout(function(){b.className='err-bar';},6000);}}
 function showLogin(){document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
 function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';var r=document.getElementById('root');if(r)r.innerHTML='<div style="text-align:center;padding:4rem;color:#626367"><div style="font-size:14px;color:#F15D1B;font-weight:600">Carregando...</div></div>';}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
@@ -232,9 +232,23 @@ function autoRefresh(){
       if(no!==JSON.stringify(S.orders)||nf!==JSON.stringify(S.funds)||non!==JSON.stringify(S.onshore)){S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));if(d.onshore&&d.onshore.length)S.onshore=d.onshore;R();}}catch(e){}
     }).catch(function(){});
 }
-function saveO(){lsSave('sd_orders',S.orders);showSave();fetch(SCRIPT_URL+'?action=save&type=orders&data='+encodeURIComponent(JSON.stringify(S.orders))).catch(function(){showErr();});}
-function saveF(){lsSave('sd_funds',S.funds);showSave();fetch(SCRIPT_URL+'?action=save&type=funds&data='+encodeURIComponent(JSON.stringify(S.funds))).catch(function(){showErr();});}
-function saveDocs(){lsSave('sd_docs',S.docs);showSave();fetch(SCRIPT_URL+'?action=save&type=docs&data='+encodeURIComponent(JSON.stringify(S.docs))).catch(function(){showErr();});}
+function syncToSheet(type,data,attempt){
+  attempt=attempt||0;
+  var body=JSON.stringify({type:type,data:JSON.stringify(data)});
+  fetch(SCRIPT_URL,{
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:body
+  }).catch(function(err){
+    if(attempt<2){setTimeout(function(){syncToSheet(type,data,attempt+1);},800*(attempt+1));return;}
+    console.error('[syncToSheet] falha apos 3 tentativas. type='+type+' erro=',err);
+    showErr(type);
+  });
+}
+function saveO(){lsSave('sd_orders',S.orders);showSave();syncToSheet('orders',S.orders);}
+function saveF(){lsSave('sd_funds',S.funds);showSave();syncToSheet('funds',S.funds);}
+function saveDocs(){lsSave('sd_docs',S.docs);showSave();syncToSheet('docs',S.docs);}
 
 function vDocs(){
   var cats=['Manuais','Wire Instructions','Cotas Onshore'];

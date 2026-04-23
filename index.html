@@ -131,7 +131,7 @@ var ON_DEFAULT=[
 ];
 
 // ─── STEPS ────────────────────────────────────────────────
-var STEPS=[
+var STEPS_SUB=[
   {n:1,lbl:'Confirmar com gest\u00e3o o valor do aporte',resp:'Opera\u00e7\u00f5es',prazo:'D+0'},
   {n:2,lbl:'Confirmar data limite de envio wire e subdoc assinado com a casa',resp:'Opera\u00e7\u00f5es',prazo:'D+0'},
   {n:3,lbl:'Lan\u00e7ar no TERA APP',resp:'Gest\u00e3o',prazo:'D+0'},
@@ -150,6 +150,27 @@ var STEPS=[
   {n:16,lbl:'Avisar administrador do fundo sobre a movimenta\u00e7\u00e3o',resp:'Opera\u00e7\u00f5es',prazo:'Assim que finalizado'},
   {n:17,lbl:'Avisar gest\u00e3o sobre a finaliza\u00e7\u00e3o do processo',resp:'Opera\u00e7\u00f5es',prazo:'Assim que tiver confirma\u00e7\u00e3o da casa'}
 ];
+var STEPS_RED=[
+  {n:1,lbl:'Confirmar com gest\u00e3o o valor do Redemption',resp:'Opera\u00e7\u00f5es',prazo:'D+0'},
+  {n:2,lbl:'Confirmar se est\u00e1 no APP TERA',resp:'Opera\u00e7\u00f5es',prazo:'D+0'},
+  {n:3,lbl:'Confirmar a janela de resgate com a casa/administrador',resp:'Opera\u00e7\u00f5es',prazo:'D+0'},
+  {n:4,lbl:'Solicitar o Redemption Form para a casa/administrador',resp:'Opera\u00e7\u00f5es',prazo:'D+0'},
+  {n:5,lbl:'Preencher o Redemption Form e enviar para valida\u00e7\u00e3o da casa/administrador',resp:'Opera\u00e7\u00f5es',prazo:'SLA 3 dias \u00fateis'},
+  {n:6,lbl:'Enviar Redemption Form para o Director do fundo assinar (Ver se precisa enviar para RI)',resp:'Opera\u00e7\u00f5es',prazo:'SLA 3 dias \u00fateis'},
+  {n:7,lbl:'Enviar para a casa/administrador o documento assinado e confirmar novamente as datas de resgate e cotiza\u00e7\u00e3o',resp:'Opera\u00e7\u00f5es',prazo:'No mesmo dia que recebermos a assinatura'},
+  {n:8,lbl:'Efetuar o lan\u00e7amento do Redemption no Addepar e Lote45, se aplic\u00e1vel',resp:'Opera\u00e7\u00f5es',prazo:'Assim que finalizado'},
+  {n:9,lbl:'Salvar documento assinado na rede do cliente',resp:'Opera\u00e7\u00f5es',prazo:'Assim que finalizado'},
+  {n:10,lbl:'Avisar o administrador do fundo solicitante sobre esse resgate',resp:'Opera\u00e7\u00f5es',prazo:'Assim que finalizado'},
+  {n:11,lbl:'Avisar gest\u00e3o',resp:'Opera\u00e7\u00f5es',prazo:'Assim que tiver confirma\u00e7\u00e3o da casa'}
+];
+// retorna os steps apropriados pra ordem.
+// regra: se a ordem ja tem steps salvos, decide pelo tamanho (17=SUB, 11=RED).
+// se for nova ordem (sem steps ainda), decide pelo tipo escolhido no form.
+function getSteps(o){
+  if(o&&o.steps&&o.steps.length===11)return STEPS_RED;
+  if(o&&o.steps&&o.steps.length===17)return STEPS_SUB;
+  return o&&o.tipo==='Redemption'?STEPS_RED:STEPS_SUB;
+}
 var ADMINS_DEF=['The Catalyst Group','Apex Group','Alter Domus','Augentius','Aztec Group','BNY Mellon','Carey Olsen','Citi Fund Services','Citco','Conyers','Deutsche Bank','Elysium Fund Management','HedgeServ','HSBC Securities Services','Intertrust Group','IQ EQ','JPMorgan Chase','Mainstream Group','Maples Group','Mourant','NAV Consulting','Northern Trust','Ogier','SEI Investments','SS&C Technologies','State Street','TMF Group','Trident Trust','UBS Fund Services','Vistra','Walkers Fund Services','AQR Capital Management','Anchorage Capital Group','Appaloosa Management','Balyasny Asset Management','Baupost Group','Brevan Howard','Bridgewater Associates','Capula Investment Management','Citadel','Coatue Management','D.E. Shaw','Elliott Management','Glenview Capital Management','Graham Capital Management','Greenlight Capital','Jana Partners','King Street Capital','Lone Pine Capital','Man Group','Marshall Wace','Millennium Management','Pershing Square Capital Management','Point72 Asset Management','Renaissance Technologies','Sculptor Capital Management','Third Point','Tiger Global Management','Two Sigma','Viking Global Investors','Winton Group'];
 var DF_INV=['Euskadi Investments Ltd.','Olympic Bahamas Ltd.','RM Fund Ltd.','CB Fund LP','Graybar Financial Services Corporation','AMGS Investments Ltd.','Bagli Limited','Wentworth Fund Icon','Peachbay International Corp','Teesdale Corporation','Tera Global SPC - Tera HF SP','Tera Global SPC - Tera Core Bonds SP','Tera Global SPC - Tera Trend Following SP','Duvall Enterprises Inc.','Fide Co Ltd.','Triboju Ltd.'];
 var DF_IVD=['TERA HF SP','TERA CORE BONDS SP','TERA TREND FOLLOWING SP'];
@@ -168,7 +189,7 @@ function showLogin(){document.getElementById('login-screen').style.display='flex
 function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';var r=document.getElementById('root');if(r)r.innerHTML='<div style="text-align:center;padding:4rem;color:#626367"><div style="font-size:14px;color:#F15D1B;font-weight:600">Carregando...</div></div>';}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
-function pct(o){return Math.round(o.steps.filter(function(s){return s.done;}).length/STEPS.length*100);}
+function pct(o){return Math.round(o.steps.filter(function(s){return s.done;}).length/o.steps.length*100);}
 function ostatus(o){var p=pct(o);return p===100?'Conclu\u00eddo':p===0?'N\u00e3o iniciado':'Em andamento';}
 function bcls(o){var p=pct(o);return p===100?'b-ok':p===0?'b-info':'b-warn';}
 function fmtV(o){if(!o.valor)return'\u2014';if(o.inKind)return o.valor+' shares';try{return new Intl.NumberFormat('pt-BR',{style:'currency',currency:o.moeda||'USD',maximumFractionDigits:0}).format(o.valor);}catch(e){return o.valor;}}
@@ -178,6 +199,7 @@ function DL(){return '<datalist id="gest-dl">'+(S.funds.admins||ADMINS_DEF).map(
 function LOGO(w,h){return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 90 34" xmlns="http://www.w3.org/2000/svg"><text x="0" y="30" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#4F5053">TER</text><text x="61" y="30" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#F15D1B">A</text></svg>';}
 function wireStatus(o){
   if(!o.wire)return null;
+  if(o.tipo==='Redemption')return null;
   var today=new Date();today.setHours(0,0,0,0);
   var wd=new Date(o.wire+'T00:00:00');
   var diff=Math.round((wd-today)/(1000*60*60*24));
@@ -508,7 +530,7 @@ function vOrders(){
       h+='<div class="ord-card'+(ws?' '+ws.cls:'')+'" onclick="openDet(\''+o.id+'\')">';
       h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-weight:600;margin-bottom:3px;font-size:15px;color:#2D2D2D">'+esc(o.fi||'\u2014')+' <span style="color:#F15D1B">&#8594;</span> '+esc(o.fiv||'\u2014')+'</div><div style="font-size:13px;color:#626367">'+esc(o.gestora||'\u2014')+(o.inKind?' <span class="badge b-ik">In-Kind</span>':'')+'</div></div>';
       h+='<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">'+(ws?'<span class="badge '+ws.badge+'">'+ws.lbl+'</span>':'')+(dv?'<span class="badge b-red">Diverg\u00eancia</span>':'')+'<span class="badge '+bcls(o)+'">'+ostatus(o)+'</span><span style="font-size:13px;color:#626367">'+esc(o.tipo||'')+'</span></div></div>';
-      h+='<div style="display:flex;justify-content:space-between;font-size:13px;color:#626367;margin-bottom:6px"><span style="font-weight:600;color:#2D2D2D">'+fmtV(o)+'</span><span>'+dn+'/'+STEPS.length+' etapas &middot; '+p+'%</span></div>';
+      h+='<div style="display:flex;justify-content:space-between;font-size:13px;color:#626367;margin-bottom:6px"><span style="font-weight:600;color:#2D2D2D">'+fmtV(o)+'</span><span>'+dn+'/'+o.steps.length+' etapas &middot; '+p+'%</span></div>';
       h+='<div class="pb"><div class="pf" style="width:'+p+'%"></div></div></div>';
     }
     h+='</div>';
@@ -630,11 +652,12 @@ function vDetail(){
     h+='</div></div>';
   }
   h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:1rem">';
-  h+='<span style="font-size:14px;font-weight:700;color:#2D2D2D">'+dn+'/'+STEPS.length+' etapas conclu\u00eddas &middot; '+p+'%</span>';
-  h+='<div style="display:flex;gap:6px;align-items:center"><button class="btn sm" onclick="navStep('+(f-1)+')" '+(f===0?'disabled':'')+'>&#8592;</button><span style="font-size:13px;padding:0 4px;font-weight:700;color:#2D2D2D">Etapa '+(f+1)+' de '+STEPS.length+'</span><button class="btn sm" onclick="navStep('+(f+1)+')" '+(f===STEPS.length-1?'disabled':'')+'>&#8594;</button><button class="btn sm" style="font-weight:700" onclick="resetSt(\''+o.id+'\')">Resetar</button></div></div>';
+  h+='<span style="font-size:14px;font-weight:700;color:#2D2D2D">'+dn+'/'+o.steps.length+' etapas conclu\u00eddas &middot; '+p+'%</span>';
+  h+='<div style="display:flex;gap:6px;align-items:center"><button class="btn sm" onclick="navStep('+(f-1)+')" '+(f===0?'disabled':'')+'>&#8592;</button><span style="font-size:13px;padding:0 4px;font-weight:700;color:#2D2D2D">Etapa '+(f+1)+' de '+o.steps.length+'</span><button class="btn sm" onclick="navStep('+(f+1)+')" '+(f===o.steps.length-1?'disabled':'')+'>&#8594;</button><button class="btn sm" style="font-weight:700" onclick="resetSt(\''+o.id+'\')">Resetar</button></div></div>';
   h+='<div class="pb" style="margin-bottom:1.25rem"><div class="pf" style="width:'+p+'%"></div></div><div>';
-  for(var i=0;i<STEPS.length;i++){
-    var s=STEPS[i];var st=o.steps[i];
+  var ST=getSteps(o);
+  for(var i=0;i<ST.length;i++){
+    var s=ST[i];var st=o.steps[i];
     var dist=Math.abs(i-f);var isActive=dist===0;
     var ist='';
     if(dist===1)ist='transform:scale(0.985);opacity:0.72;filter:blur(0.6px);';
@@ -657,7 +680,7 @@ function rForm(isEdit,o){
   var fi=S.funds.investidor;var fiv=S.funds.investido;
   var ik=isEdit?o.inKind:_ik;
   var h='<div class="ifrm" id="order-form">'+DL();
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem"><div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:2px">'+(isEdit?'Editar ordem':'Nova ordem')+'</div><span style="font-weight:700;font-size:16px;color:#2D2D2D">Subscription Document</span></div><button class="btn sm" onclick="'+(isEdit?'cancelEdit()':'togForm()')+'">Cancelar</button></div>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem"><div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:2px">'+(isEdit?'Editar ordem':'Nova ordem')+'</div><span style="font-weight:700;font-size:16px;color:#2D2D2D">Detalhes da ordem</span></div><button class="btn sm" onclick="'+(isEdit?'cancelEdit()':'togForm()')+'">Cancelar</button></div>';
   h+='<div class="fr"><div class="fg"><label>Fundo investidor</label><select id="f-fi"><option value="">Selecione...</option>';
   fi.forEach(function(f){h+='<option value="'+esc(f)+'"'+(isEdit&&o.fi===f?' selected':'')+'>'+esc(f)+'</option>';});
   h+='</select></div><div class="fg"><label>Fundo investido</label><select id="f-fiv"><option value="">Selecione...</option>';
@@ -739,12 +762,14 @@ function togForm(){S.showForm=!S.showForm;_ik=false;R();if(S.showForm)setTimeout
 function togIK(){_ik=!_ik;R();}
 function togEditIK(id){for(var i=0;i<S.orders.length;i++){if(S.orders[i].id===id){S.orders[i].inKind=!S.orders[i].inKind;break;}}R();}
 function setFocus(i){S.focusStep=i;R();}
-function navStep(i){if(i>=0&&i<STEPS.length){S.focusStep=i;R();}}
+function navStep(i){var o=null;for(var k=0;k<S.orders.length;k++)if(S.orders[k].id===S.selId){o=S.orders[k];break;}var max=o?o.steps.length:17;if(i>=0&&i<max){S.focusStep=i;R();}}
 function startEdit(id){S.editId=id;R();}
 function cancelEdit(){S.editId=null;R();}
 function createOrd(){
   var ik=_ik;var moe=document.getElementById('f-moe');
-  var o={id:uid(),fi:document.getElementById('f-fi').value,fiv:document.getElementById('f-fiv').value,gestora:document.getElementById('f-gest').value.trim(),tipo:document.getElementById('f-tipo').value,valor:parseFloat(document.getElementById('f-val').value)||0,moeda:ik?'SHARES':(moe?moe.value:'USD'),wire:document.getElementById('f-wire').value||null,inKind:ik,valorConfirmado:null,steps:STEPS.map(function(){return{done:false,obs:''};},this),createdAt:new Date().toISOString()};
+  var tp=document.getElementById('f-tipo').value;
+  var ST=tp==='Redemption'?STEPS_RED:STEPS_SUB;
+  var o={id:uid(),fi:document.getElementById('f-fi').value,fiv:document.getElementById('f-fiv').value,gestora:document.getElementById('f-gest').value.trim(),tipo:tp,valor:parseFloat(document.getElementById('f-val').value)||0,moeda:ik?'SHARES':(moe?moe.value:'USD'),wire:document.getElementById('f-wire').value||null,inKind:ik,valorConfirmado:null,steps:ST.map(function(){return{done:false,obs:''};},this),createdAt:new Date().toISOString()};
   S.orders.unshift(o);S.showForm=false;saveO();R();
 }
 function saveEditOrd(id){
@@ -758,7 +783,7 @@ function togStep(id,idx,val){
       S.orders[i].steps[idx].done=val;
       if(val){
         var next=idx+1;
-        if(next<STEPS.length) S.focusStep=next;
+        if(next<S.orders[i].steps.length) S.focusStep=next;
       }
       break;
     }

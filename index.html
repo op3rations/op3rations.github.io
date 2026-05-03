@@ -713,18 +713,31 @@ function cotasIsBusinessDay(d){
   return true;
 }
 function cotasGetBusinessDays(weeks){
-  // retorna array de datas dos ultimos N semanas (incluindo hoje), so dias uteis,
-  // em ordem cronologica crescente. weeks=4 -> ~20 dias uteis
+  // retorna array de datas: ultimos N semanas + 2 semanas a frente, so dias uteis,
+  // em ordem cronologica crescente. Anchor = startDate (se navegou) ou hoje (BR).
+  // weeks=4 -> ~20 dias uteis no passado + ~10 dias uteis no futuro
+  var FUTURE_WEEKS=2;
+  var anchor=S.cotasView.startDate?cotasParseIso(S.cotasView.startDate):cotasTodayBR();
+  anchor=new Date(anchor.getFullYear(),anchor.getMonth(),anchor.getDate());
+  var begin=new Date(anchor);begin.setDate(begin.getDate()-(weeks*7-1));
+  var end=new Date(anchor);end.setDate(end.getDate()+FUTURE_WEEKS*7);
   var out=[];
-  var start=S.cotasView.startDate?cotasParseIso(S.cotasView.startDate):cotasTodayBR();
-  start=new Date(start.getFullYear(),start.getMonth(),start.getDate()); // zero-time
-  var begin=new Date(start);begin.setDate(begin.getDate()-(weeks*7-1));
   var cursor=new Date(begin);
-  while(cursor<=start){
+  while(cursor<=end){
     if(cotasIsBusinessDay(cursor))out.push(new Date(cursor));
     cursor.setDate(cursor.getDate()+1);
   }
   return out;
+}
+// retorna o ultimo dia util ate hoje (inclusive hoje se for util).
+// usado pra destacar a coluna "atual" mesmo quando hoje eh fim de semana ou feriado.
+function cotasLastBusinessDay(){
+  var d=cotasTodayBR();
+  for(var i=0;i<14;i++){
+    if(cotasIsBusinessDay(d))return d;
+    d.setDate(d.getDate()-1);
+  }
+  return cotasTodayBR();
 }
 function cotasEntryKey(fundoId,iso){return fundoId+'|'+iso;}
 function cotasGetEntry(fundoId,iso){
@@ -802,7 +815,7 @@ function vCotas(){
   h+='</div>';
 
   // tabela
-  h+='<div style="overflow-x:auto;border:1px solid #EAE7E3;border-radius:6px">';
+  h+='<div id="cotas-scroll" style="overflow-x:auto;border:1px solid #EAE7E3;border-radius:6px;cursor:grab;user-select:none">';
   h+='<table style="border-collapse:collapse;font-size:12px;width:100%;min-width:900px">';
   h+='<thead><tr style="background:#F5F3F1">';
   h+='<th style="padding:8px 10px;text-align:left;font-weight:600;color:#626367;border-bottom:1px solid #EAE7E3;position:sticky;left:0;background:#F5F3F1;z-index:2;min-width:170px">Fundo</th>';
@@ -810,9 +823,14 @@ function vCotas(){
   h+='<th style="padding:8px 10px;text-align:left;font-weight:600;color:#626367;border-bottom:1px solid #EAE7E3;min-width:110px">Owner</th>';
   dates.forEach(function(d){
     var iso=cotasIso(d);
-    var today=cotasIso(cotasTodayBR());
-    var isToday=iso===today;
-    h+='<th style="padding:8px 6px;text-align:center;font-weight:600;color:'+(isToday?'#F15D1B':'#626367')+';border-bottom:1px solid #EAE7E3;min-width:70px;font-size:11px"'+(isToday?' title="Hoje"':'')+'>'+cotasFmtDate(d)+(isToday?' \u25cf':'')+'</th>';
+    var todayIso=cotasIso(cotasTodayBR());
+    var lastBizIso=cotasIso(cotasLastBusinessDay());
+    var isToday=iso===todayIso;
+    var isLastBiz=!isToday&&iso===lastBizIso; // marca o ultimo dia util quando hoje eh sab/dom/feriado
+    var color=(isToday||isLastBiz)?'#F15D1B':'#626367';
+    var marker=isToday?' \u25cf':(isLastBiz?' \u25cb':'');
+    var titleAttr=isToday?' title="Hoje"':(isLastBiz?' title="\u00daltimo dia \u00fatil"':'');
+    h+='<th data-date="'+iso+'" style="padding:8px 6px;text-align:center;font-weight:600;color:'+color+';border-bottom:1px solid #EAE7E3;min-width:70px;font-size:11px"'+titleAttr+'>'+cotasFmtDate(d)+marker+'</th>';
   });
   h+='</tr></thead><tbody>';
 
@@ -856,9 +874,58 @@ function vCotas(){
     h+=vCotasCellEditor();
   }
 
+  // post-render: scroll automatico ate "hoje" e drag horizontal
+  setTimeout(cotasSetupScroll,30);
+
   return h;
 }
-
+function cotasSetupScroll(){
+  var sc=document.getElementById('cotas-scroll');
+  if(!sc)return;
+  // 1) scroll automatico ate o "hoje" (ou ultimo dia util)
+  // procura o th com data-date matching hoje ou ultimo dia util
+  var todayIso=cotasIso(cotasTodayBR());
+  var lastBizIso=cotasIso(cotasLastBusinessDay());
+  var ths=sc.querySelectorAll('th[data-date]');
+  var targetTh=null;
+  for(var i=0;i<ths.length;i++){
+    var d=ths[i].getAttribute('data-date');
+    if(d===todayIso){targetTh=ths[i];break;}
+    if(d===lastBizIso&&!targetTh)targetTh=ths[i];
+  }
+  if(targetTh){
+    // posiciona o "hoje" a ~70% da janela visivel (espaco a direita pra ver futuro)
+    var thLeft=targetTh.offsetLeft;
+    var visible=sc.clientWidth;
+    sc.scrollLeft=Math.max(0,thLeft-visible*0.7);
+  }
+  // 2) drag-to-scroll horizontal (clicar e arrastar)
+  if(sc._dragInited)return;
+  sc._dragInited=true;
+  var isDown=false,startX=0,scrollLeft=0,moved=false;
+  sc.addEventListener('mousedown',function(e){
+    // ignora se clicou em celula clicavel (deixa o click normal funcionar)
+    if(e.target.closest('[onclick]'))return;
+    isDown=true;moved=false;
+    sc.style.cursor='grabbing';
+    startX=e.pageX-sc.offsetLeft;
+    scrollLeft=sc.scrollLeft;
+  });
+  sc.addEventListener('mouseleave',function(){isDown=false;sc.style.cursor='grab';});
+  sc.addEventListener('mouseup',function(){isDown=false;sc.style.cursor='grab';});
+  sc.addEventListener('mousemove',function(e){
+    if(!isDown)return;
+    e.preventDefault();
+    var x=e.pageX-sc.offsetLeft;
+    var walk=(x-startX);
+    if(Math.abs(walk)>3)moved=true;
+    sc.scrollLeft=scrollLeft-walk;
+  });
+  // se moveu durante o drag, cancela cliques (evita abrir editor por engano)
+  sc.addEventListener('click',function(e){
+    if(moved){e.stopPropagation();e.preventDefault();moved=false;}
+  },true);
+}
 function vCotasCellEditor(){
   var c=S.cotasCell;
   var f=null;for(var i=0;i<S.cotas.config.length;i++)if(S.cotas.config[i].id===c.fundoId){f=S.cotas.config[i];break;}
@@ -915,12 +982,21 @@ function cotasClearCell(){
   S.cotasCell=null;R();
 }
 function cotasNavDate(deltaDays){
-  if(deltaDays===0){S.cotasView.startDate=null;}
-  else{
-    var cur=S.cotasView.startDate?cotasParseIso(S.cotasView.startDate):cotasTodayBR();
-    cur.setDate(cur.getDate()+deltaDays);
-    S.cotasView.startDate=cotasIso(cur);
+  if(deltaDays===0){
+    S.cotasView.startDate=null;
+    R();
+    // forca scroll pro 'hoje' apos render
+    setTimeout(function(){
+      var sc=document.getElementById('cotas-scroll');
+      if(!sc)return;
+      sc._dragInited=false; // permite recriar handlers se preciso
+      cotasSetupScroll();
+    },50);
+    return;
   }
+  var cur=S.cotasView.startDate?cotasParseIso(S.cotasView.startDate):cotasTodayBR();
+  cur.setDate(cur.getDate()+deltaDays);
+  S.cotasView.startDate=cotasIso(cur);
   R();
 }
 function cotasManageFundos(){

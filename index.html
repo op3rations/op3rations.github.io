@@ -166,7 +166,7 @@ var DF_IVD=['TERA HF SP','TERA CORE BONDS SP','TERA TREND FOLLOWING SP'];
 var DF_FUNDS={investidor:DF_INV.slice(),investido:DF_IVD.slice(),admins:ADMINS_DEF.slice()};
 
 // ─── STATE ────────────────────────────────────────────────
-var S={view:'home',placeholderTitle:'',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],docs:[],wires:[],wireDetail:null,wireEdit:null,wireNew:false,wireSearch:'',wireReveal:{},selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false,docNew:false,docEdit:null,admNew:false,admSearch:''};
+var S={view:'home',placeholderTitle:'',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],docs:[],wires:[],cotas:{config:[],entries:{},feriados:[]},cotasView:{startDate:null,filterOwner:'',filterAdm:'',search:''},cotasCell:null,wireDetail:null,wireEdit:null,wireNew:false,wireSearch:'',wireReveal:{},selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false,docNew:false,docEdit:null,admNew:false,admSearch:''};
 var _ik=false,_saveTimer=null,_refreshTimer=null,_token=null,_lastView=null;
 
 // ─── HELPERS ──────────────────────────────────────────────
@@ -236,14 +236,14 @@ function init(){
     .then(function(txt){
       try{var d=JSON.parse(txt);
         if(d.error==='unauthorized'){logout();return;}
-        S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));if(!S.funds.admins||S.funds.admins.length===0)S.funds.admins=ADMINS_DEF.slice();S.onshore=d.onshore&&d.onshore.length?d.onshore:ON_DEFAULT.slice();S.docs=d.docs||[];S.wires=d.wires||[];}
-      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));if(!S.funds.admins||!S.funds.admins.length)S.funds.admins=ADMINS_DEF.slice();S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.wires=lsLoad('sd_wires')||[];}
+        S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));if(!S.funds.admins||S.funds.admins.length===0)S.funds.admins=ADMINS_DEF.slice();S.onshore=d.onshore&&d.onshore.length?d.onshore:ON_DEFAULT.slice();S.docs=d.docs||[];S.wires=d.wires||[];S.cotas=d.cotas||{config:[],entries:{},feriados:[]};if(!S.cotas.config)S.cotas.config=[];if(!S.cotas.entries)S.cotas.entries={};if(!S.cotas.feriados)S.cotas.feriados=[];}
+      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));if(!S.funds.admins||!S.funds.admins.length)S.funds.admins=ADMINS_DEF.slice();S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.wires=lsLoad('sd_wires')||[];S.cotas=lsLoad('sd_cotas')||{config:[],entries:{},feriados:[]};}
       S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);
     })
-    .catch(function(){      S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.wires=lsLoad('sd_wires')||[];S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
+    .catch(function(){      S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.wires=lsLoad('sd_wires')||[];S.cotas=lsLoad('sd_cotas')||{config:[],entries:{},feriados:[]};S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
 }
 function autoRefresh(){
-  if(S.showForm||S.editId||S.onNew||S.onEdit!==null||S.view==='home'||S.view==='placeholder'||S.view==='onshore'||S.view==='docs'||S.view==='email'||S.view==='detail'||S.view==='funds'||S.view==='orders'||S.view==='wires'||S.view==='insights'||S.docNew||S.docEdit!==null||S.wireNew||S.wireEdit!==null||S.wireDetail)return;
+  if(S.showForm||S.editId||S.onNew||S.onEdit!==null||S.view==='home'||S.view==='placeholder'||S.view==='cotas'||S.view==='onshore'||S.view==='docs'||S.view==='email'||S.view==='detail'||S.view==='funds'||S.view==='orders'||S.view==='wires'||S.view==='insights'||S.docNew||S.docEdit!==null||S.wireNew||S.wireEdit!==null||S.wireDetail||S.cotasCell)return;
   fetch(SCRIPT_URL+'?action=getData&token='+encodeURIComponent(_token||'')+'&t='+Date.now())
     .then(function(r){return r.text();})
     .then(function(txt){
@@ -271,6 +271,7 @@ function saveO(){lsSave('sd_orders',S.orders);showSave();syncToSheet('orders',S.
 function saveF(){lsSave('sd_funds',S.funds);showSave();syncToSheet('funds',S.funds);}
 function saveDocs(){lsSave('sd_docs',S.docs);showSave();syncToSheet('docs',S.docs);}
 function saveW(){lsSave('sd_wires',S.wires);showSave();syncToSheet('wires',S.wires);}
+function saveCotas(){lsSave('sd_cotas',S.cotas);showSave();syncToSheet('cotas',S.cotas);}
 
 function vDocs(){
   var cats=['Manuais','Wire Instructions','Cotas Onshore'];
@@ -457,6 +458,7 @@ function R(){
       docs:'Manuais',
       email:'E-mail',
       wires:'Wire Instructions',
+      cotas:'Cotas',
       insights:'Insights',
       placeholder:S.placeholderTitle||'Em desenvolvimento'
     };
@@ -473,6 +475,7 @@ function R(){
       else if(S.view==='email')inner=vEmail();
       else if(S.view==='docs')inner=vDocs();
       else if(S.view==='wires')inner=vWires();
+      else if(S.view==='cotas')inner=vCotas();
       else if(S.view==='insights')inner=vInsights();
       else if(S.view==='placeholder')inner=vPlaceholder();
       else if(S.view==='funds')inner=vFunds();
@@ -513,7 +516,7 @@ function vHome(){
   ]);
   h+=hubSection('Controles',[
     {label:'Rebate',disabled:true},
-    {label:'Cotas',disabled:true},
+    {label:'Cotas',action:"go('cotas')"},
     {label:'NAV',disabled:true},
     {label:'Passivo',disabled:true}
   ]);
@@ -567,6 +570,300 @@ function vPlaceholder(){
   h+='<button class="btn p" onclick="go(\'home\')">Voltar ao Dashboard</button>';
   h+='</div></div>';
   return h;
+}
+// ─── COTAS (batimento de cotas onshore) ───────────────────
+// pre-cadastro vindo da planilha excel original. Esses fundos aparecem
+// automaticamente na primeira vez que a aba Cotas eh aberta, se ainda
+// nao houver nenhuma config salva.
+var COTAS_SEED=[
+  {fundo:'MALUBI FIM',codigo:'N/A',adm:'BTG',owner:'Felipe Ferreira'},
+  {fundo:'VRB FIA',codigo:'INTTERA65594',adm:'INTRAG',owner:'Weslley Alves'},
+  {fundo:'VRB FIM',codigo:'INTRPATRIA62034',adm:'INTRAG',owner:'Weslley Alves'},
+  {fundo:'VRB PREV FIM',codigo:'BNY12339',adm:'MELLON',owner:'Weslley Alves'},
+  {fundo:'AVANTE FIM CP IE',codigo:'INTRPATRIA580',adm:'INTRAG',owner:'Livia Pieri'},
+  {fundo:'DONOSTIA FIM CP IE',codigo:'INTRPATRIA578',adm:'INTRAG',owner:'Livia Pieri'},
+  {fundo:'LIDIDU FIM CP',codigo:'INTRAG50450',adm:'BRADESCO',owner:'Livia Pieri'},
+  {fundo:'LOREMA FIM CP IE',codigo:'INTRPATRIA577',adm:'INTRAG',owner:'Livia Pieri'},
+  {fundo:'PADOVA FIM CP IE',codigo:'INTRPATRIA579',adm:'UBS',owner:'Livia Pieri'},
+  {fundo:'RM FIM IE',codigo:'INTRPATRIA60664',adm:'UBS',owner:'Livia Pieri'},
+  {fundo:'TERA CRED FV',codigo:'N/A',adm:'BTG',owner:'Livia Pieri'},
+  {fundo:'TERA DC FIC FIA',codigo:'INTTERA66131',adm:'INTRAG',owner:'Livia Pieri'},
+  {fundo:'TERA EQUITY',codigo:'HGRIFFO62806',adm:'INTRAG',owner:'Livia Pieri'},
+  {fundo:'TERA PREV ICATU',codigo:'INTTERA68144',adm:'INTRAG',owner:'Livia Pieri'},
+  {fundo:'TERA YIELD',codigo:'N/A',adm:'BTG',owner:'Livia Pieri'},
+  {fundo:'VRB PREV FI RF',codigo:'N/A',adm:'BTG',owner:'Livia Pieri'}
+];
+
+function cotasInit(){
+  // se a config ainda esta vazia, popula com o seed (uma unica vez)
+  if(!S.cotas.config||S.cotas.config.length===0){
+    S.cotas.config=COTAS_SEED.map(function(c){return{id:uid(),fundo:c.fundo,codigo:c.codigo,adm:c.adm,owner:c.owner};});
+    saveCotas();
+  }
+}
+
+function cotasFmtDate(d){
+  // d = Date object -> "DD/MM"
+  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+}
+function cotasIso(d){
+  // d = Date object -> "YYYY-MM-DD"
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function cotasParseIso(s){
+  var p=s.split('-');return new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+}
+function cotasIsBusinessDay(d){
+  var w=d.getDay();
+  if(w===0||w===6)return false; // domingo, sabado
+  var iso=cotasIso(d);
+  if(S.cotas.feriados&&S.cotas.feriados.indexOf(iso)>=0)return false;
+  return true;
+}
+function cotasGetBusinessDays(weeks){
+  // retorna array de datas dos ultimos N semanas (incluindo hoje), so dias uteis,
+  // em ordem cronologica crescente. weeks=4 -> ~20 dias uteis
+  var out=[];
+  var start=S.cotasView.startDate?cotasParseIso(S.cotasView.startDate):new Date();
+  start=new Date(start.getFullYear(),start.getMonth(),start.getDate()); // zero-time
+  var begin=new Date(start);begin.setDate(begin.getDate()-(weeks*7-1));
+  var cursor=new Date(begin);
+  while(cursor<=start){
+    if(cotasIsBusinessDay(cursor))out.push(new Date(cursor));
+    cursor.setDate(cursor.getDate()+1);
+  }
+  return out;
+}
+function cotasEntryKey(fundoId,iso){return fundoId+'|'+iso;}
+function cotasGetEntry(fundoId,iso){
+  return S.cotas.entries[cotasEntryKey(fundoId,iso)]||null;
+}
+function cotasSetEntry(fundoId,iso,texto,cor){
+  var k=cotasEntryKey(fundoId,iso);
+  if((!texto||!texto.trim())&&cor==='gray'){
+    delete S.cotas.entries[k];
+  }else{
+    S.cotas.entries[k]={t:texto||'',c:cor||'green'};
+  }
+  saveCotas();
+}
+function cotasColorBg(c){
+  if(c==='green')return'#D4EDDA';
+  if(c==='yellow')return'#FFF3CD';
+  if(c==='red')return'#F8D7DA';
+  return'#F0EEEC';
+}
+function cotasColorText(c){
+  if(c==='green')return'#155724';
+  if(c==='yellow')return'#856404';
+  if(c==='red')return'#721C24';
+  return'#626367';
+}
+function cotasColorBorder(c){
+  if(c==='green')return'#A3D9B0';
+  if(c==='yellow')return'#FFE69C';
+  if(c==='red')return'#F1B0B7';
+  return'#DDD8D2';
+}
+
+function vCotas(){
+  cotasInit();
+  var dates=cotasGetBusinessDays(4);
+  var fundos=S.cotas.config.slice();
+  // filtros
+  var fOwner=S.cotasView.filterOwner||'';
+  var fAdm=S.cotasView.filterAdm||'';
+  var fSearch=(S.cotasView.search||'').toLowerCase();
+  if(fOwner)fundos=fundos.filter(function(f){return f.owner===fOwner;});
+  if(fAdm)fundos=fundos.filter(function(f){return f.adm===fAdm;});
+  if(fSearch)fundos=fundos.filter(function(f){return(f.fundo||'').toLowerCase().indexOf(fSearch)>=0||(f.codigo||'').toLowerCase().indexOf(fSearch)>=0;});
+
+  // owners e adms unicos pra dropdowns
+  var owners={},adms={};
+  S.cotas.config.forEach(function(f){if(f.owner)owners[f.owner]=true;if(f.adm)adms[f.adm]=true;});
+  var ownersList=Object.keys(owners).sort();
+  var admsList=Object.keys(adms).sort();
+
+  var h='<div class="ca" style="padding:1.25rem;margin-bottom:1rem">';
+  // cabecalho
+  h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;gap:10px;flex-wrap:wrap">';
+  h+='<div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700">Cotas</div><span style="font-weight:700;font-size:18px;color:#2D2D2D">Batimento di\u00e1rio de cotas</span><div style="font-size:12px;color:#626367;margin-top:4px">'+fundos.length+' fundo'+(fundos.length===1?'':'s')+' &middot; '+dates.length+' dias \u00fateis</div></div>';
+  h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">';
+  h+='<button class="btn sm" onclick="cotasNavDate(-7)" title="Semana anterior">\u00ab</button>';
+  h+='<button class="btn sm" onclick="cotasNavDate(0)">Hoje</button>';
+  h+='<button class="btn sm" onclick="cotasNavDate(7)" title="Pr\u00f3xima semana">\u00bb</button>';
+  h+='<button class="btn sm" onclick="cotasManageFundos()">Gerenciar fundos</button>';
+  h+='<button class="btn sm" onclick="cotasManageFeriados()">Feriados</button>';
+  h+='</div></div>';
+
+  // filtros
+  h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">';
+  h+='<input class="ip" id="cotas-search" style="width:220px" placeholder="Buscar fundo ou c\u00f3digo..." value="'+esc(S.cotasView.search||'')+'" oninput="S.cotasView.search=this.value;R();setTimeout(function(){var el=document.getElementById(\'cotas-search\');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0);">';
+  h+='<select class="ip" style="width:auto" onchange="S.cotasView.filterOwner=this.value;R();"><option value="">Todos os owners</option>';
+  ownersList.forEach(function(o){h+='<option value="'+esc(o)+'"'+(fOwner===o?' selected':'')+'>'+esc(o)+'</option>';});
+  h+='</select>';
+  h+='<select class="ip" style="width:auto" onchange="S.cotasView.filterAdm=this.value;R();"><option value="">Todos os ADMs</option>';
+  admsList.forEach(function(a){h+='<option value="'+esc(a)+'"'+(fAdm===a?' selected':'')+'>'+esc(a)+'</option>';});
+  h+='</select>';
+  if(fOwner||fAdm||fSearch){
+    h+='<button class="btn sm" onclick="S.cotasView.filterOwner=\'\';S.cotasView.filterAdm=\'\';S.cotasView.search=\'\';R();">Limpar filtros</button>';
+  }
+  h+='</div>';
+
+  // tabela
+  h+='<div style="overflow-x:auto;border:1px solid #EAE7E3;border-radius:6px">';
+  h+='<table style="border-collapse:collapse;font-size:12px;width:100%;min-width:900px">';
+  h+='<thead><tr style="background:#F5F3F1">';
+  h+='<th style="padding:8px 10px;text-align:left;font-weight:600;color:#626367;border-bottom:1px solid #EAE7E3;position:sticky;left:0;background:#F5F3F1;z-index:2;min-width:170px">Fundo</th>';
+  h+='<th style="padding:8px 10px;text-align:left;font-weight:600;color:#626367;border-bottom:1px solid #EAE7E3;min-width:90px">ADM</th>';
+  h+='<th style="padding:8px 10px;text-align:left;font-weight:600;color:#626367;border-bottom:1px solid #EAE7E3;min-width:110px">Owner</th>';
+  dates.forEach(function(d){
+    var iso=cotasIso(d);
+    var today=cotasIso(new Date());
+    var isToday=iso===today;
+    h+='<th style="padding:8px 6px;text-align:center;font-weight:600;color:'+(isToday?'#F15D1B':'#626367')+';border-bottom:1px solid #EAE7E3;min-width:70px;font-size:11px"'+(isToday?' title="Hoje"':'')+'>'+cotasFmtDate(d)+(isToday?' \u25cf':'')+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+
+  if(fundos.length===0){
+    h+='<tr><td colspan="'+(3+dates.length)+'" style="padding:2rem;text-align:center;color:#626367;font-size:13px">Nenhum fundo encontrado.</td></tr>';
+  }else{
+    fundos.forEach(function(f){
+      h+='<tr style="border-bottom:1px solid #F5F3F1">';
+      h+='<td style="padding:8px 10px;font-weight:600;color:#2D2D2D;position:sticky;left:0;background:white;z-index:1">'+esc(f.fundo)+'<div style="font-size:10px;color:#9A958F;font-weight:400">'+esc(f.codigo||'')+'</div></td>';
+      h+='<td style="padding:8px 10px;color:#626367">'+esc(f.adm||'')+'</td>';
+      h+='<td style="padding:8px 10px;color:#626367">'+esc(f.owner||'')+'</td>';
+      dates.forEach(function(d){
+        var iso=cotasIso(d);
+        var entry=cotasGetEntry(f.id,iso);
+        var bg=entry?cotasColorBg(entry.c):'transparent';
+        var fg=entry?cotasColorText(entry.c):'#9A958F';
+        var bd=entry?cotasColorBorder(entry.c):'#EAE7E3';
+        var label=entry?(entry.t||(entry.c==='green'?'ok':entry.c==='yellow'?'!':entry.c==='red'?'X':'')):'';
+        var titleAttr=entry&&entry.t?' title="'+esc(entry.t)+'"':'';
+        h+='<td style="padding:2px;text-align:center;border-left:1px solid #F5F3F1"><div onclick="cotasOpenCell(\''+esc(f.id)+'\',\''+iso+'\')" style="background:'+bg+';color:'+fg+';border:1px solid '+bd+';border-radius:4px;padding:6px 4px;cursor:pointer;font-size:11px;line-height:1.3;min-height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"'+titleAttr+'>'+esc(label.length>14?label.substring(0,12)+'\u2026':label)+'</div></td>';
+      });
+      h+='</tr>';
+    });
+  }
+
+  h+='</tbody></table></div>';
+
+  // legenda
+  h+='<div style="display:flex;gap:14px;margin-top:10px;font-size:11px;color:#626367;flex-wrap:wrap">';
+  h+='<span><span style="display:inline-block;width:12px;height:12px;background:#D4EDDA;border:1px solid #A3D9B0;border-radius:2px;vertical-align:middle"></span> OK</span>';
+  h+='<span><span style="display:inline-block;width:12px;height:12px;background:#FFF3CD;border:1px solid #FFE69C;border-radius:2px;vertical-align:middle"></span> Aten\u00e7\u00e3o</span>';
+  h+='<span><span style="display:inline-block;width:12px;height:12px;background:#F8D7DA;border:1px solid #F1B0B7;border-radius:2px;vertical-align:middle"></span> Pend\u00eancia</span>';
+  h+='<span><span style="display:inline-block;width:12px;height:12px;background:#F0EEEC;border:1px solid #DDD8D2;border-radius:2px;vertical-align:middle"></span> Neutro/em branco</span>';
+  h+='<span style="margin-left:auto">Clique numa c\u00e9lula para editar</span>';
+  h+='</div>';
+
+  h+='</div>';
+
+  // popover de edicao
+  if(S.cotasCell){
+    h+=vCotasCellEditor();
+  }
+
+  return h;
+}
+
+function vCotasCellEditor(){
+  var c=S.cotasCell;
+  var f=null;for(var i=0;i<S.cotas.config.length;i++)if(S.cotas.config[i].id===c.fundoId){f=S.cotas.config[i];break;}
+  if(!f)return'';
+  var entry=cotasGetEntry(c.fundoId,c.iso)||{t:'',c:'green'};
+  var dispDate=cotasFmtDate(cotasParseIso(c.iso))+'/'+c.iso.split('-')[0];
+  var h='<div onclick="cotasCancelCell(event)" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem">';
+  h+='<div onclick="event.stopPropagation()" style="background:white;border-radius:8px;max-width:480px;width:100%;padding:1.5rem;box-shadow:0 8px 32px rgba(0,0,0,.2)">';
+  h+='<div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:2px">Batimento de cota</div>';
+  h+='<div style="font-weight:700;font-size:16px;color:#2D2D2D">'+esc(f.fundo)+'</div>';
+  h+='<div style="font-size:12px;color:#626367;margin-bottom:14px">'+esc(f.adm||'')+' &middot; '+esc(f.owner||'')+' &middot; '+dispDate+'</div>';
+  h+='<label class="lb">Status</label>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">';
+  ['green','yellow','red','gray'].forEach(function(col){
+    var lbl=col==='green'?'OK':col==='yellow'?'Aten\u00e7\u00e3o':col==='red'?'Pend\u00eancia':'Neutro';
+    var sel=entry.c===col;
+    h+='<button onclick="S.cotasCell.cor=\''+col+'\';R();" style="flex:1;padding:8px;border:2px solid '+(sel?cotasColorBorder(col):'#EAE7E3')+';background:'+(sel?cotasColorBg(col):'white')+';color:'+cotasColorText(col)+';border-radius:6px;cursor:pointer;font-weight:'+(sel?'700':'500')+';font-size:13px">'+lbl+'</button>';
+  });
+  h+='</div>';
+  h+='<label class="lb">Texto / observa\u00e7\u00e3o</label>';
+  h+='<textarea id="cota-cell-text" class="ip" rows="3" style="resize:vertical;font-family:inherit;margin-bottom:14px" placeholder="ex: ok, ou observa\u00e7\u00e3o livre">'+esc(c.texto!==undefined?c.texto:entry.t)+'</textarea>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">';
+  h+='<button class="btn sm dr" onclick="cotasClearCell()">Limpar c\u00e9lula</button>';
+  h+='<div style="display:flex;gap:6px"><button class="btn" onclick="cotasCancelCell()">Cancelar</button><button class="btn p" onclick="cotasSaveCell()">Salvar</button></div>';
+  h+='</div>';
+  h+='</div></div>';
+  // foca o textarea apos render
+  setTimeout(function(){var t=document.getElementById('cota-cell-text');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length);}},10);
+  return h;
+}
+
+function cotasOpenCell(fundoId,iso){
+  S.cotasCell={fundoId:fundoId,iso:iso,texto:undefined,cor:undefined};
+  R();
+}
+function cotasCancelCell(e){
+  if(e){e.stopPropagation();}
+  S.cotasCell=null;R();
+}
+function cotasSaveCell(){
+  var c=S.cotasCell;if(!c)return;
+  var t=document.getElementById('cota-cell-text');
+  var texto=t?t.value:'';
+  var cor=c.cor||(cotasGetEntry(c.fundoId,c.iso)||{}).c||'green';
+  // se nao escolheu cor explicita e nao tinha entrada, e digitou "ok", deixa verde
+  if(!c.cor&&texto.trim().toLowerCase()==='ok')cor='green';
+  cotasSetEntry(c.fundoId,c.iso,texto,cor);
+  S.cotasCell=null;R();
+}
+function cotasClearCell(){
+  var c=S.cotasCell;if(!c)return;
+  delete S.cotas.entries[cotasEntryKey(c.fundoId,c.iso)];
+  saveCotas();
+  S.cotasCell=null;R();
+}
+function cotasNavDate(deltaDays){
+  if(deltaDays===0){S.cotasView.startDate=null;}
+  else{
+    var cur=S.cotasView.startDate?cotasParseIso(S.cotasView.startDate):new Date();
+    cur.setDate(cur.getDate()+deltaDays);
+    S.cotasView.startDate=cotasIso(cur);
+  }
+  R();
+}
+function cotasManageFundos(){
+  var current=S.cotas.config||[];
+  var lines=current.map(function(f){return f.fundo+'|'+(f.codigo||'')+'|'+(f.adm||'')+'|'+(f.owner||'');}).join('\n');
+  var msg='Edite a lista de fundos (um por linha, formato: NOME|CODIGO|ADM|OWNER).\n\nDeixe vazio para remover todos.';
+  var input=prompt(msg,lines);
+  if(input===null)return; // cancel
+  var newCfg=[];
+  input.split('\n').forEach(function(ln){
+    var parts=ln.split('|');
+    var nome=(parts[0]||'').trim();
+    if(!nome)return;
+    // tenta achar id existente pelo nome (preserva entries)
+    var existing=current.filter(function(c){return c.fundo===nome;})[0];
+    newCfg.push({
+      id:existing?existing.id:uid(),
+      fundo:nome,
+      codigo:(parts[1]||'').trim(),
+      adm:(parts[2]||'').trim(),
+      owner:(parts[3]||'').trim()
+    });
+  });
+  S.cotas.config=newCfg;
+  saveCotas();R();
+}
+function cotasManageFeriados(){
+  var current=(S.cotas.feriados||[]).join('\n');
+  var msg='Liste os feriados (um por linha, formato: YYYY-MM-DD).\n\nEx: 2026-04-21';
+  var input=prompt(msg,current);
+  if(input===null)return;
+  var arr=input.split('\n').map(function(s){return s.trim();}).filter(function(s){return /^\d{4}-\d{2}-\d{2}$/.test(s);});
+  S.cotas.feriados=arr;
+  saveCotas();R();
 }
 // ─── INSIGHTS ─────────────────────────────────────────────
 function vInsights(){
@@ -1309,7 +1606,7 @@ function vFunds(){
 }
 
 // ─── ACTIONS ──────────────────────────────────────────────
-function go(v){S.view=v;S.showForm=false;S.editId=null;S.onDetail=null;S.onEdit=null;S.onNew=false;S.wireDetail=null;S.wireEdit=null;S.wireNew=false;S.wireSearch='';S.wireReveal={};S.placeholderTitle='';R();}
+function go(v){S.view=v;S.showForm=false;S.editId=null;S.onDetail=null;S.onEdit=null;S.onNew=false;S.wireDetail=null;S.wireEdit=null;S.wireNew=false;S.wireSearch='';S.wireReveal={};S.placeholderTitle='';S.cotasCell=null;R();}
 function goPlaceholder(title){S.view='placeholder';S.placeholderTitle=title;R();}
 function setFilter(k,v){S.filters[k]=v;R();}
 function clearFilters(){S.filters={fiv:'',tipo:'',status:''};R();}

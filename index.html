@@ -460,7 +460,7 @@ function R(){
       insights:'Insights',
       placeholder:S.placeholderTitle||'Em desenvolvimento'
     };
-    var crumb=S.view==='home'?'Dashboard de Opera\u00e7\u00f5es':'<a onclick="go(\'home\')" style="color:#F15D1B;cursor:pointer;text-decoration:none">Dashboard de Opera\u00e7\u00f5es</a> <span style="color:#C5C0BB">\u203a</span> <span style="color:#2D2D2D">'+esc(viewLabels[S.view]||S.view)+'</span>';
+    var crumb=S.view==='home'?'Dashboard de Opera\u00e7\u00f5es':'<a onclick="go(\'home\')" style="color:#F15D1B;cursor:pointer;text-decoration:none">Dashboard de Opera\u00e7\u00f5es</a> <span style="color:#C5C0BB;margin:0 12px">\u203a</span> <span style="color:#2D2D2D">'+esc(viewLabels[S.view]||S.view)+'</span>';
     var h='<div class="nav"><span style="cursor:pointer;display:flex;align-items:center" onclick="go(\'home\')" title="Voltar ao in\u00edcio">'+LOGO(56,22)+'</span>';
     h+='<div style="font-size:16px;font-weight:500;margin-left:10px;display:flex;align-items:center;line-height:1">'+crumb+'</div>';
     h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';

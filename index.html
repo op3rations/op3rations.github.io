@@ -453,7 +453,7 @@ function R(){
       home:'Atividades',
       orders:'SubDocs',detail:'SubDocs',
       onshore:'Ve\u00edculos Internos',
-      funds:'Fundos',
+      funds:'Investidos e Investidores',
       docs:'Manuais',
       email:'E-mail',
       wires:'Wire Instructions',
@@ -461,8 +461,8 @@ function R(){
       placeholder:S.placeholderTitle||'Em desenvolvimento'
     };
     var crumb=S.view==='home'?'Dashboard de Opera\u00e7\u00f5es':'<a onclick="go(\'home\')" style="color:#F15D1B;cursor:pointer;text-decoration:none">Dashboard de Opera\u00e7\u00f5es</a> <span style="color:#C5C0BB">\u203a</span> <span style="color:#2D2D2D">'+esc(viewLabels[S.view]||S.view)+'</span>';
-    var h='<div class="nav"><span style="cursor:pointer" onclick="go(\'home\')" title="Voltar ao in\u00edcio">'+LOGO(56,22)+'</span>';
-    h+='<div style="font-size:13px;font-weight:500;margin-left:6px">'+crumb+'</div>';
+    var h='<div class="nav"><span style="cursor:pointer;display:flex;align-items:center" onclick="go(\'home\')" title="Voltar ao in\u00edcio">'+LOGO(56,22)+'</span>';
+    h+='<div style="font-size:16px;font-weight:500;margin-left:10px;display:flex;align-items:center;line-height:1">'+crumb+'</div>';
     h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
     if(S.view==='home')h+=vHome();
     else{
@@ -518,10 +518,10 @@ function vHome(){
     {label:'Passivo',disabled:true}
   ]);
   h+=hubSection('Informa\u00e7\u00f5es',[
-    {label:'Corretoras/Gestores',disabled:true},
-    {label:'Ve\u00edculos Externos',disabled:true},
     {label:'Ve\u00edculos Internos',action:"go('onshore')"},
-    {label:'Fundos',action:"go('funds')"},
+    {label:'Ve\u00edculos Externos',disabled:true},
+    {label:'Investidos e Investidores',action:"go('funds')"},
+    {label:'Corretoras e Gestores',disabled:true},
     {label:'Wire Instructions',action:"go('wires')"},
     {label:'E-mail',action:"go('email')"}
   ]);

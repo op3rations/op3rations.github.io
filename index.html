@@ -631,7 +631,8 @@ function cotasTodayBR(){
   return new Date(n.getFullYear(),n.getMonth(),n.getDate());
 }
 
-// classifica uma string em cor com base no conteudo
+// classifica uma string em cor com base no conteudo.
+// gray = SOMENTE pra string vazia. Se tem qualquer texto, retorna green/yellow/red.
 function cotasInferColor(text){
   if(!text)return'gray';
   var t=text.trim().toLowerCase();
@@ -942,11 +943,11 @@ function vCotas(){
   }
   h+='</div>';
 
-  // barra de selecao multipla (visivel quando ha celulas selecionadas via Ctrl+click)
+  // barra de selecao multipla (visivel quando ha celulas selecionadas)
   if(S.cotasSelected&&S.cotasSelected.length>0){
-    h+='<div style="background:#FEF3EC;border:1px solid #F8C9A6;border-radius:6px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
-    h+='<span style="font-size:13px;color:#7A3C10;font-weight:600">'+S.cotasSelected.length+' c\u00e9lula(s) selecionada(s)</span>';
-    h+='<span style="font-size:12px;color:#9A958F">Ctrl/Cmd+clique para selecionar mais &middot; Delete para limpar conte\u00fado &middot; Esc para cancelar</span>';
+    h+='<div id="cotas-selbar" style="background:#FEF3EC;border:1px solid #F8C9A6;border-radius:6px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
+    h+='<span id="cotas-selbar-count" style="font-size:13px;color:#7A3C10;font-weight:600">'+S.cotasSelected.length+' c\u00e9lula(s) selecionada(s)</span>';
+    h+='<span style="font-size:12px;color:#9A958F">Ctrl/Cmd+clique para selecionar mais &middot; Duplo-clique abre o editor &middot; Delete limpa &middot; Esc cancela</span>';
     h+='<div style="margin-left:auto;display:flex;gap:6px"><button class="btn sm dr" onclick="cotasClearSelected()">Limpar conte\u00fado</button><button class="btn sm" onclick="cotasClearSelection()">Cancelar</button></div>';
     h+='</div>';
   }
@@ -990,7 +991,7 @@ function vCotas(){
         var cellKey=f.id+'|'+iso;
         var isSel=S.cotasSelected&&S.cotasSelected.indexOf(cellKey)>=0;
         var selStyle=isSel?'box-shadow:0 0 0 2px #F15D1B inset;':'';
-        h+='<td style="padding:2px;text-align:center;border-left:1px solid #F5F3F1"><div onclick="cotasCellClick(event,\''+esc(f.id)+'\',\''+iso+'\')" style="background:'+bg+';color:'+fg+';border:1px solid '+bd+';border-radius:4px;padding:6px 4px;cursor:pointer;font-size:11px;line-height:1.3;min-height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'+selStyle+'"'+titleAttr+'>'+esc(label.length>14?label.substring(0,12)+'\u2026':label)+'</div></td>';
+        h+='<td style="padding:2px;text-align:center;border-left:1px solid #F5F3F1"><div data-cellkey="'+cellKey+'" onclick="cotasCellClick(event,\''+esc(f.id)+'\',\''+iso+'\')" ondblclick="cotasCellDblClick(event,\''+esc(f.id)+'\',\''+iso+'\')" style="background:'+bg+';color:'+fg+';border:1px solid '+bd+';border-radius:4px;padding:6px 4px;cursor:pointer;font-size:11px;line-height:1.3;min-height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'+selStyle+'"'+titleAttr+'>'+esc(label.length>14?label.substring(0,12)+'\u2026':label)+'</div></td>';
       });
       h+='</tr>';
     });
@@ -1003,7 +1004,7 @@ function vCotas(){
   h+='<span><span style="display:inline-block;width:12px;height:12px;background:#D4EDDA;border:1px solid #A3D9B0;border-radius:2px;vertical-align:middle"></span> OK</span>';
   h+='<span><span style="display:inline-block;width:12px;height:12px;background:#FFF3CD;border:1px solid #FFE69C;border-radius:2px;vertical-align:middle"></span> Aten\u00e7\u00e3o</span>';
   h+='<span><span style="display:inline-block;width:12px;height:12px;background:#F8D7DA;border:1px solid #F1B0B7;border-radius:2px;vertical-align:middle"></span> Pend\u00eancia</span>';
-  h+='<span><span style="display:inline-block;width:12px;height:12px;background:#F0EEEC;border:1px solid #DDD8D2;border-radius:2px;vertical-align:middle"></span> Neutro/em branco</span>';
+  h+='<span><span style="display:inline-block;width:12px;height:12px;background:#F0EEEC;border:1px solid #DDD8D2;border-radius:2px;vertical-align:middle"></span> Em branco</span>';
   h+='<span style="margin-left:auto">Clique numa c\u00e9lula para editar</span>';
   h+='</div>';
 
@@ -1104,8 +1105,8 @@ function cotasCellEditorHTML(){
   h+='<div style="font-size:12px;color:#626367;margin-bottom:14px">'+esc(f.adm||'')+' &middot; '+esc(f.owner||'')+' &middot; '+dispDate+'</div>';
   h+='<label class="lb">Status</label>';
   h+='<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">';
-  ['green','yellow','red','gray'].forEach(function(col){
-    var lbl=col==='green'?'OK':col==='yellow'?'Aten\u00e7\u00e3o':col==='red'?'Pend\u00eancia':'Neutro';
+  ['green','yellow','red'].forEach(function(col){
+    var lbl=col==='green'?'OK':col==='yellow'?'Aten\u00e7\u00e3o':'Pend\u00eancia';
     var sel=activeCor===col;
     var bg=sel?cotasColorBg(col):'white';
     var border=sel?cotasColorBorder(col):'#EAE7E3';
@@ -1115,7 +1116,7 @@ function cotasCellEditorHTML(){
     h+='<button onclick="cotasPickColor(\''+col+'\')" style="flex:1;padding:8px;border:'+bw+' solid '+border+';background:'+bg+';color:'+cotasColorText(col)+';border-radius:6px;cursor:pointer;font-weight:'+weight+';font-size:13px;transition:all .12s ease">'+check+lbl+'</button>';
   });
   h+='</div>';
-  h+='<label class="lb">Texto / observa\u00e7\u00e3o <span style="color:#9A958F;font-size:11px;font-weight:400">(Enter para salvar, Shift+Enter para quebrar linha, Tab para pr\u00f3xima c\u00e9lula)</span></label>';
+  h+='<label class="lb">Texto / observa\u00e7\u00e3o <span style="color:#9A958F;font-size:11px;font-weight:400">(Enter para salvar, Shift+Enter para quebrar linha)</span></label>';
   var initialText=c.texto!==undefined?c.texto:entry.t;
   h+='<textarea id="cota-cell-text" class="ip" rows="3" style="resize:vertical;font-family:inherit;margin-bottom:14px" placeholder="ex: ok, ou observa\u00e7\u00e3o livre" onkeydown="cotasCellKeydown(event)">'+esc(initialText)+'</textarea>';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">';
@@ -1136,16 +1137,11 @@ function cotasPickColor(col){
   cotasRenderOverlay();
 }
 
-// teclado dentro do textarea: Enter salva e fecha; Shift+Enter quebra linha; Tab navega
+// teclado dentro do textarea: Enter salva e fecha; Shift+Enter quebra linha; Esc cancela
 function cotasCellKeydown(e){
   if(e.key==='Enter'&&!e.shiftKey){
     e.preventDefault();
     cotasSaveCell();
-    return;
-  }
-  if(e.key==='Tab'){
-    e.preventDefault();
-    cotasSaveCellAndNav(e.shiftKey?-1:1);
     return;
   }
   if(e.key==='Escape'){
@@ -1155,72 +1151,85 @@ function cotasCellKeydown(e){
   }
 }
 
-// salva celula atual e abre a celula adjacente (item 5)
-// dir = 1 (proxima) ou -1 (anterior). Navegacao: mesma linha -> coluna seguinte;
-// se ultima coluna -> proxima linha primeira coluna; se ultima linha -> volta pra primeira.
-function cotasSaveCellAndNav(dir){
-  var c=S.cotasCell;if(!c)return;
-  // salva atual (sem fechar)
-  var t=document.getElementById('cota-cell-text');
-  var texto=t?t.value:'';
-  var cor=c.cor||(cotasGetEntry(c.fundoId,c.iso)||{}).c||'green';
-  if(c.cor===undefined&&texto.trim().toLowerCase()==='ok')cor='green';
-  cotasSetEntry(c.fundoId,c.iso,texto,cor); // ja chama saveCotas
-  // calcula proxima celula
-  var dates=cotasGetBusinessDays(4);
-  var hidden=S.cotas.hiddenDates||[];
-  if(hidden.length>0)dates=dates.filter(function(d){return hidden.indexOf(cotasIso(d))<0;});
-  var fundos=S.cotas.config;
-  // aplica os mesmos filtros que a vCotas pra navegar so dentro do que esta visivel
-  var fOwner=S.cotasView.filterOwner||'';
-  var fAdm=S.cotasView.filterAdm||'';
-  var fSearch=(S.cotasView.search||'').toLowerCase();
-  if(fOwner)fundos=fundos.filter(function(f){return f.owner===fOwner;});
-  if(fAdm)fundos=fundos.filter(function(f){return f.adm===fAdm;});
-  if(fSearch)fundos=fundos.filter(function(f){return(f.fundo||'').toLowerCase().indexOf(fSearch)>=0||(f.codigo||'').toLowerCase().indexOf(fSearch)>=0;});
-  if(fundos.length===0||dates.length===0){cotasCancelCell();return;}
-  // acha indice atual
-  var fIdx=-1;for(var i=0;i<fundos.length;i++)if(fundos[i].id===c.fundoId){fIdx=i;break;}
-  var dIdx=-1;for(var j=0;j<dates.length;j++)if(cotasIso(dates[j])===c.iso){dIdx=j;break;}
-  if(fIdx<0||dIdx<0){cotasCancelCell();return;}
-  // avanca: dia primeiro, depois fundo (estilo Excel: Tab vai pra direita)
-  dIdx+=dir;
-  if(dIdx>=dates.length){dIdx=0;fIdx+=1;}
-  else if(dIdx<0){dIdx=dates.length-1;fIdx-=1;}
-  if(fIdx<0||fIdx>=fundos.length){cotasCancelCell();return;}
-  // re-render leve da tabela (pra refletir o que foi salvo) e abre proxima celula
-  R();
-  setTimeout(function(){
-    cotasOpenCell(fundos[fIdx].id,cotasIso(dates[dIdx]));
-  },20);
-}
+// (removido) cotasSaveCellAndNav: Tab no editor foi descontinuado.
 
 function cotasOpenCell(fundoId,iso){
   S.cotasCell={fundoId:fundoId,iso:iso,texto:undefined,cor:undefined};
   cotasRenderOverlay();
 }
 
-// handler de clique em celula: distingue Ctrl+clique (multi-select) de clique simples (abrir editor)
+// atualiza visualmente uma celula no DOM sem re-renderizar a tabela inteira.
+// chamado quando seleciona/desseleciona pra evitar piscar.
+function cotasUpdateCellVisual(cellKey){
+  var sel=S.cotasSelected||[];
+  var isSel=sel.indexOf(cellKey)>=0;
+  // procura o div da celula pelo data-cellkey
+  var el=document.querySelector('[data-cellkey="'+cellKey+'"]');
+  if(!el)return;
+  if(isSel){el.style.boxShadow='0 0 0 2px #F15D1B inset';}
+  else{el.style.boxShadow='';}
+}
+
+// atualiza a barra de selecao (contador "X celulas selecionadas") sem re-render.
+function cotasUpdateSelectionBar(){
+  var sel=S.cotasSelected||[];
+  var bar=document.getElementById('cotas-selbar');
+  if(sel.length===0){if(bar)bar.style.display='none';return;}
+  if(!bar){
+    // se nao existe, precisa de re-render uma vez pra criar (acontece so na 1a selecao)
+    R();
+    return;
+  }
+  bar.style.display='flex';
+  var counter=document.getElementById('cotas-selbar-count');
+  if(counter)counter.textContent=sel.length+' c\u00e9lula(s) selecionada(s)';
+}
+
+// handler de clique simples em celula: SELECIONA (sem abrir editor)
+// - sem Ctrl: substitui selecao atual por essa celula
+// - com Ctrl/Cmd: adiciona/remove dessa celula da selecao
 function cotasCellClick(e,fundoId,iso){
   e.stopPropagation();
   var cellKey=fundoId+'|'+iso;
   if(e.ctrlKey||e.metaKey){
-    // multi-select com Ctrl/Cmd
+    // toggle multi-select
     if(!S.cotasSelected)S.cotasSelected=[];
     var idx=S.cotasSelected.indexOf(cellKey);
-    if(idx>=0)S.cotasSelected.splice(idx,1);
-    else S.cotasSelected.push(cellKey);
-    if(S.cotasSelected.length===0)S.cotasSelected=null;
-    R();
+    if(idx>=0){
+      S.cotasSelected.splice(idx,1);
+      if(S.cotasSelected.length===0)S.cotasSelected=null;
+      cotasUpdateCellVisual(cellKey);
+    }else{
+      S.cotasSelected.push(cellKey);
+      cotasUpdateCellVisual(cellKey);
+    }
+    cotasUpdateSelectionBar();
     return;
   }
-  // clique simples: limpa selecao multipla e abre editor
-  if(S.cotasSelected){S.cotasSelected=null;}
+  // clique simples: substitui selecao atual por apenas essa celula
+  var prev=(S.cotasSelected||[]).slice();
+  S.cotasSelected=[cellKey];
+  // limpa visual das anteriores que nao estao mais selecionadas
+  prev.forEach(function(k){if(k!==cellKey)cotasUpdateCellVisual(k);});
+  cotasUpdateCellVisual(cellKey);
+  cotasUpdateSelectionBar();
+}
+
+// handler de duplo-clique: ABRE editor
+function cotasCellDblClick(e,fundoId,iso){
+  e.stopPropagation();
+  // limpa selecao atual (sem re-render visual da barra: o R() do open vai cuidar)
+  if(S.cotasSelected){
+    var prev=S.cotasSelected.slice();
+    S.cotasSelected=null;
+    prev.forEach(cotasUpdateCellVisual);
+    var bar=document.getElementById('cotas-selbar');
+    if(bar)bar.style.display='none';
+  }
   cotasOpenCell(fundoId,iso);
 }
 
-// apaga conteudo de todas as celulas selecionadas. NAO pede confirmacao por celula
-// (so uma confirmacao geral) — agiliza limpeza em massa.
+// apaga conteudo de todas as celulas selecionadas
 function cotasClearSelected(){
   var sel=S.cotasSelected;
   if(!sel||sel.length===0)return;
@@ -1231,7 +1240,11 @@ function cotasClearSelected(){
 }
 
 function cotasClearSelection(){
-  S.cotasSelected=null;R();
+  var prev=(S.cotasSelected||[]).slice();
+  S.cotasSelected=null;
+  prev.forEach(cotasUpdateCellVisual);
+  var bar=document.getElementById('cotas-selbar');
+  if(bar)bar.style.display='none';
 }
 function cotasCancelCell(e){
   if(e&&e.stopPropagation){e.stopPropagation();}
@@ -1242,12 +1255,23 @@ function cotasSaveCell(){
   var c=S.cotasCell;if(!c)return;
   var t=document.getElementById('cota-cell-text');
   var texto=t?t.value:'';
-  var cor=c.cor||(cotasGetEntry(c.fundoId,c.iso)||{}).c||'green';
-  if(!c.cor&&texto.trim().toLowerCase()==='ok')cor='green';
+  // se nao tem texto, apaga a entrada (celula em branco)
+  if(!texto.trim()){
+    delete S.cotas.entries[cotasEntryKey(c.fundoId,c.iso)];
+    saveCotas();
+    S.cotasCell=null;
+    cotasRenderOverlay();
+    R();
+    return;
+  }
+  // tem texto: cor obrigatoriamente verde/amarelo/vermelho (nunca gray)
+  var cor=c.cor||(cotasGetEntry(c.fundoId,c.iso)||{}).c||cotasInferColor(texto);
+  if(cor==='gray')cor=cotasInferColor(texto);
+  if(['green','yellow','red'].indexOf(cor)<0)cor='green';
   cotasSetEntry(c.fundoId,c.iso,texto,cor);
   S.cotasCell=null;
   cotasRenderOverlay();
-  R(); // re-renderiza tabela uma vez no save (esperado)
+  R();
 }
 function cotasClearCell(){
   var c=S.cotasCell;if(!c)return;

@@ -275,8 +275,18 @@ function saveW(){lsSave('sd_wires',S.wires);showSave();syncToSheet('wires',S.wir
 function saveCotas(){lsSave('sd_cotas',S.cotas);showSave();syncToSheet('cotas',S.cotas);}
 
 function vDocs(){
-  var cats=['Manuais','Wire Instructions','Cotas Onshore'];
-  var icons={'Manuais':'','Wire Instructions':'','Cotas Onshore':''};
+  // migracao: documentos com categorias antigas (Wire Instructions / Cotas Onshore)
+  // sao movidos automaticamente pra "Manuais" (categoria default).
+  var migrated=false;
+  S.docs.forEach(function(d){
+    if(d.cat==='Wire Instructions'||d.cat==='Cotas Onshore'){
+      d.cat='Manuais';
+      migrated=true;
+    }
+  });
+  if(migrated)saveDocs();
+  var cats=['Manuais','Regulamentos Onshore','PPM/Offering Memorandum/AoA'];
+  var icons={'Manuais':'','Regulamentos Onshore':'','PPM/Offering Memorandum/AoA':''};
   var h='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">';
   h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Reposit&oacute;rio</div>';
   h+='<h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Documentos</h1></div>';
@@ -322,7 +332,7 @@ function docIcon(nome){
 }
 
 function docForm(isEdit,d){
-  var cats=['Manuais','Wire Instructions','Cotas Onshore'];
+  var cats=['Manuais','Regulamentos Onshore','PPM/Offering Memorandum/AoA'];
   var v=isEdit?d:{nome:'',desc:'',url:'',cat:'Manuais'};
   var h='<div class="ifrm" style="margin-bottom:1rem">';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">';
@@ -467,7 +477,8 @@ function R(){
     var crumb=S.view==='home'?'Dashboard de Opera\u00e7\u00f5es':'<a onclick="go(\'home\')" style="color:#F15D1B;cursor:pointer;text-decoration:none">Dashboard de Opera\u00e7\u00f5es</a> <span style="color:#C5C0BB;margin:0 12px">\u203a</span> <span style="color:#2D2D2D">'+esc(viewLabels[S.view]||S.view)+'</span>';
     var h='<div class="nav"><span style="cursor:pointer;display:flex;align-items:center" onclick="go(\'home\')" title="Voltar ao in\u00edcio">'+LOGO(56,22)+'</span>';
     h+='<div style="font-size:16px;font-weight:500;margin-left:10px;display:flex;align-items:center;line-height:1">'+crumb+'</div>';
-    h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
+    var emailBtn=S.view==='email'?'':'<button onclick="go(\'email\')" style="background:#FCE5D4;border:1px solid #F8C9A6;color:#7A3C10;padding:5px 12px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s ease" onmouseover="this.style.background=\'#F8C9A6\'" onmouseout="this.style.background=\'#FCE5D4\'">E-mail</button>';
+    h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px">'+emailBtn+'<span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
     if(S.view==='home')h+=vHome();
     else{
       var inner='';
@@ -527,8 +538,7 @@ function vHome(){
     {label:'Ve\u00edculos Externos',disabled:true},
     {label:'Investidos e Investidores',target:'funds'},
     {label:'Corretoras e Gestores',disabled:true},
-    {label:'Wire Instructions',target:'wires'},
-    {label:'E-mail',target:'email'}
+    {label:'Wire Instructions',target:'wires'}
   ]);
   h+=hubSection('Documentos',[
     {label:'Manuais',target:'docs'}

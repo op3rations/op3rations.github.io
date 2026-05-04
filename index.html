@@ -830,11 +830,6 @@ function cotasManageHidden(){
 // listener global pra teclas Delete/Backspace/Esc/Ctrl+C/Ctrl+V/Setas na view de Cotas
 (function(){
   document.addEventListener('keydown',function(e){
-    // === DIAGNOSTICO TEMPORARIO (remover depois) ===
-    if(['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].indexOf(e.key)>=0){
-      console.log('[COTAS] tecla='+e.key+' | view='+S.view+' | cotasCell='+(S.cotasCell?'sim':'nao')+' | sel='+JSON.stringify(S.cotasSelected)+' | targetTag='+(e.target.tagName||'')+' | targetClass='+(e.target.className||''));
-    }
-    // === FIM DIAGNOSTICO ===
     if(S.view!=='cotas')return;
     if(S.cotasCell)return; // editor aberto: nao interfere
     var tag=(e.target.tagName||'').toLowerCase();

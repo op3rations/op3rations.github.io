@@ -827,7 +827,7 @@ function cotasManageHidden(){
   cotasRestoreColumn(hidden[n-1]);
 }
 
-// listener global pra teclas Delete/Backspace/Esc/Ctrl+C/Ctrl+V na view de Cotas
+// listener global pra teclas Delete/Backspace/Esc/Ctrl+C/Ctrl+V/Setas na view de Cotas
 (function(){
   document.addEventListener('keydown',function(e){
     if(S.view!=='cotas')return;
@@ -851,6 +851,22 @@ function cotasManageHidden(){
       }
       return;
     }
+    // Setas — navegacao estilo Excel (so quando exatamente 1 celula selecionada)
+    if(S.cotasSelected&&S.cotasSelected.length===1){
+      var arrow={'ArrowRight':[0,1],'ArrowLeft':[0,-1],'ArrowDown':[1,0],'ArrowUp':[-1,0]}[e.key];
+      if(arrow){
+        e.preventDefault();
+        cotasNavArrow(arrow[0],arrow[1]);
+        return;
+      }
+      // Enter abre o editor da celula selecionada
+      if(e.key==='Enter'){
+        e.preventDefault();
+        var parts=S.cotasSelected[0].split('|');
+        cotasOpenCell(parts[0],parts[1]);
+        return;
+      }
+    }
     if(!S.cotasSelected||S.cotasSelected.length===0)return;
     if(e.key==='Delete'||e.key==='Backspace'){
       e.preventDefault();
@@ -861,6 +877,61 @@ function cotasManageHidden(){
     }
   });
 })();
+
+// move a selecao 1 celula em determinada direcao (rowDelta, colDelta).
+// rowDelta = +1 desce 1 linha, -1 sobe 1 linha
+// colDelta = +1 vai pra direita, -1 vai pra esquerda
+// respeita filtros e datas escondidas. nao "wrap-around" — para nas bordas.
+function cotasNavArrow(rowDelta,colDelta){
+  if(!S.cotasSelected||S.cotasSelected.length!==1)return;
+  var current=S.cotasSelected[0];
+  var parts=current.split('|');
+  var fundoIdAtual=parts[0];
+  var isoAtual=parts[1];
+  // monta lista de fundos visiveis (mesmos filtros que a vCotas usa)
+  var fundos=S.cotas.config.slice();
+  var fOwner=S.cotasView.filterOwner||'';
+  var fAdm=S.cotasView.filterAdm||'';
+  var fSearch=(S.cotasView.search||'').toLowerCase();
+  if(fOwner)fundos=fundos.filter(function(f){return f.owner===fOwner;});
+  if(fAdm)fundos=fundos.filter(function(f){return f.adm===fAdm;});
+  if(fSearch)fundos=fundos.filter(function(f){return(f.fundo||'').toLowerCase().indexOf(fSearch)>=0||(f.codigo||'').toLowerCase().indexOf(fSearch)>=0;});
+  // monta lista de datas visiveis
+  var dates=cotasGetBusinessDays(4);
+  var hidden=S.cotas.hiddenDates||[];
+  if(hidden.length>0)dates=dates.filter(function(d){return hidden.indexOf(cotasIso(d))<0;});
+  // acha indice atual
+  var rIdx=-1;for(var i=0;i<fundos.length;i++)if(fundos[i].id===fundoIdAtual){rIdx=i;break;}
+  var cIdx=-1;for(var j=0;j<dates.length;j++)if(cotasIso(dates[j])===isoAtual){cIdx=j;break;}
+  if(rIdx<0||cIdx<0)return; // celula atual nao esta visivel (filtro mudou)
+  // calcula nova posicao
+  var nr=rIdx+rowDelta;
+  var nc=cIdx+colDelta;
+  // bordas: para sem wrap
+  if(nr<0||nr>=fundos.length||nc<0||nc>=dates.length)return;
+  // troca selecao (substitui o anterior)
+  var newKey=fundos[nr].id+'|'+cotasIso(dates[nc]);
+  S.cotasSelected=[newKey];
+  cotasUpdateCellVisual(current);
+  cotasUpdateCellVisual(newKey);
+  // garante que a celula nova esta visivel no scroll horizontal
+  var el=document.querySelector('[data-cellkey="'+newKey+'"]');
+  if(el&&el.scrollIntoView){
+    // scroll suave horizontal sem afetar scroll vertical
+    var sc=document.getElementById('cotas-scroll');
+    if(sc){
+      var elRect=el.getBoundingClientRect();
+      var scRect=sc.getBoundingClientRect();
+      // se ta cortada na direita
+      if(elRect.right>scRect.right-20){
+        sc.scrollLeft+=(elRect.right-scRect.right+40);
+      }else if(elRect.left<scRect.left+180){
+        // se ta cortada na esquerda (180 = espaco aproximado das colunas fixas)
+        sc.scrollLeft-=(scRect.left+180-elRect.left+10);
+      }
+    }
+  }
+}
 function cotasEntryKey(fundoId,iso){return fundoId+'|'+iso;}
 function cotasGetEntry(fundoId,iso){
   return S.cotas.entries[cotasEntryKey(fundoId,iso)]||null;

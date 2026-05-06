@@ -295,7 +295,7 @@ function vDocs(){
   h+='</div>';
 
   if(tab==='manuais')h+=vDocsManuais();
-  else if(tab==='regulamentos')h+=vDocsFundLinked('regulamentos','Regulamentos Onshore',S.onshore.map(function(o){return o.nome||o.fundo||o;}));
+  else if(tab==='regulamentos')h+=vDocsFundLinked('regulamentos','Regulamentos Onshore',S.onshore.map(function(o){return Array.isArray(o)?o[0]:(o.nome||o.fundo||o);}));
   else if(tab==='ppm')h+=vDocsFundLinked('ppm','PPM/Offering Memorandum/AoA',S.funds.investido||[]);
   return h;
 }

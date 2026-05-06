@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Demandas Operations</title>
+<title>SubDocs</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='92' font-size='130' font-family='Arial,sans-serif' font-weight='700' fill='%23F15D1B' text-anchor='middle'%3EO%3C/text%3E%3C/svg%3E">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -167,7 +167,7 @@ var DF_IVD=['TERA HF SP','TERA CORE BONDS SP','TERA TREND FOLLOWING SP'];
 var DF_FUNDS={investidor:DF_INV.slice(),investido:DF_IVD.slice(),admins:ADMINS_DEF.slice()};
 
 // ─── STATE ────────────────────────────────────────────────
-var S={view:'home',placeholderTitle:'',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],docs:[],wires:[],cotas:{config:[],entries:{},feriados:[],hiddenDates:[]},cotasView:{startDate:null,filterOwner:'',filterAdm:'',search:''},cotasCell:null,cotasSelected:null,wireDetail:null,wireEdit:null,wireNew:false,wireSearch:'',wireReveal:{},selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false,docNew:false,docEdit:null,admNew:false,admSearch:''};
+var S={view:'home',placeholderTitle:'',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],docs:[],wires:[],cotas:{config:[],entries:{},feriados:[],hiddenDates:[]},cotasView:{startDate:null,filterOwner:'',filterAdm:'',filterShow:'all',search:''},cotasCell:null,cotasSelected:null,wireDetail:null,wireEdit:null,wireNew:false,wireSearch:'',wireReveal:{},selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false,docNew:false,docEdit:null,admNew:false,admSearch:''};
 var _ik=false,_saveTimer=null,_refreshTimer=null,_token=null,_lastView=null,_cotasClipboard=null;
 
 // ─── HELPERS ──────────────────────────────────────────────
@@ -475,8 +475,8 @@ function R(){
       placeholder:S.placeholderTitle||'Em desenvolvimento'
     };
     var crumb=S.view==='home'?'Dashboard de Opera\u00e7\u00f5es':'<a onclick="go(\'home\')" style="color:#F15D1B;cursor:pointer;text-decoration:none">Dashboard de Opera\u00e7\u00f5es</a> <span style="color:#C5C0BB;margin:0 12px">\u203a</span> <span style="color:#2D2D2D">'+esc(viewLabels[S.view]||S.view)+'</span>';
-    var h='<div class="nav"><span style="cursor:pointer;display:flex;align-items:center" onclick="go(\'home\')" title="Voltar ao in\u00edcio">'+LOGO(56,22)+'</span>';
-    h+='<div style="font-size:16px;font-weight:500;margin-left:10px;display:flex;align-items:center;line-height:1">'+crumb+'</div>';
+    var h='<div class="nav" style="position:relative"><span style="cursor:pointer;display:flex;align-items:center" onclick="go(\'home\')" title="Voltar ao in\u00edcio">'+LOGO(96,38)+'</span>';
+    h+='<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:20px;font-weight:600;display:flex;align-items:center;line-height:1;white-space:nowrap;color:#2D2D2D">'+crumb+'</div>';
     var emailBtn=S.view==='email'?'':'<button onclick="go(\'email\')" style="background:#FCE5D4;border:1px solid #F8C9A6;color:#7A3C10;padding:5px 12px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s ease" onmouseover="this.style.background=\'#F8C9A6\'" onmouseout="this.style.background=\'#FCE5D4\'">E-mail</button>';
     h+='<div style="margin-left:auto;display:flex;align-items:center;gap:10px">'+emailBtn+'<span style="font-size:13px;color:#626367">'+esc(currentUser||'')+'</span><button class="btn sm dr" onclick="logout()">Sair</button></div></div>';
     if(S.view==='home')h+=vHome();
@@ -537,7 +537,6 @@ function vHome(){
     {label:'Ve\u00edculos Internos',target:'onshore'},
     {label:'Ve\u00edculos Externos',disabled:true},
     {label:'Investidos e Investidores',target:'funds'},
-    {label:'Corretoras e Gestores',disabled:true},
     {label:'Wire Instructions',target:'wires'}
   ]);
   h+=hubSection('Documentos',[
@@ -1065,6 +1064,27 @@ function vCotas(){
   if(fAdm)fundos=fundos.filter(function(f){return f.adm===fAdm;});
   if(fSearch)fundos=fundos.filter(function(f){return(f.fundo||'').toLowerCase().indexOf(fSearch)>=0||(f.codigo||'').toLowerCase().indexOf(fSearch)>=0;});
 
+  // filtro "Mostrar" — analisa as celulas no periodo visivel
+  var fShow=S.cotasView.filterShow||'all';
+  if(fShow!=='all'){
+    var prevDates=cotasGetBusinessDays(4);
+    var prevHidden=S.cotas.hiddenDates||[];
+    if(prevHidden.length>0)prevDates=prevDates.filter(function(d){return prevHidden.indexOf(cotasIso(d))<0;});
+    fundos=fundos.filter(function(f){
+      var hasNonOk=false,hasAny=false;
+      for(var di=0;di<prevDates.length;di++){
+        var entry=cotasGetEntry(f.id,cotasIso(prevDates[di]));
+        if(!entry||!entry.t||!entry.t.trim())continue;
+        hasAny=true;
+        var isOk=entry.c==='green'&&entry.t.toLowerCase().indexOf('ok')>=0;
+        if(!isOk)hasNonOk=true;
+      }
+      if(fShow==='pendencias')return hasNonOk;
+      if(fShow==='ok')return hasAny&&!hasNonOk;
+      return true;
+    });
+  }
+
   // owners e adms unicos pra dropdowns
   var owners={},adms={};
   S.cotas.config.forEach(function(f){if(f.owner)owners[f.owner]=true;if(f.adm)adms[f.adm]=true;});
@@ -1090,6 +1110,14 @@ function vCotas(){
   h+='</select>';
   h+='<select class="ip" style="width:auto" onchange="S.cotasView.filterAdm=this.value;R();"><option value="">Todos os ADMs</option>';
   admsList.forEach(function(a){h+='<option value="'+esc(a)+'"'+(fAdm===a?' selected':'')+'>'+esc(a)+'</option>';});
+  h+='</select>';
+
+  // dropdown "Mostrar" — filtra fundos por status no periodo visivel
+  var fShow=S.cotasView.filterShow||'all';
+  h+='<select class="ip" style="width:auto" onchange="S.cotasView.filterShow=this.value;R();">';
+  h+='<option value="all"'+(fShow==='all'?' selected':'')+'>Mostrar tudo</option>';
+  h+='<option value="pendencias"'+(fShow==='pendencias'?' selected':'')+'>Apenas pend\u00eancias (n\u00e3o-OK)</option>';
+  h+='<option value="ok"'+(fShow==='ok'?' selected':'')+'>Apenas OK</option>';
   h+='</select>';
 
   // dropdown "Excluir coluna" — lista datas passadas (anteriores a hoje) atualmente visiveis
@@ -1848,7 +1876,7 @@ function vWireDetail(){
   var h='<div class="ca" style="padding:1.5rem">';
   h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;gap:10px;flex-wrap:wrap">';
   h+='<div><div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:2px">Wire Instruction</div><span style="font-weight:700;font-size:18px;color:#2D2D2D">'+esc(w.name||'')+'</span>'+(w.currency?' <span class="bd b-info" style="margin-left:8px">'+esc(w.currency)+'</span>':'')+'</div>';
-  h+='<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" onclick="wireToggleAll(\''+esc(w.id)+'\')">'+(wireAllRevealed(w.id)?'Mascarar tudo':'Revelar tudo')+'</button><button class="btn sm" onclick="wireCopy(\''+esc(w.id)+'\')">Copiar</button><button class="btn sm" onclick="wireStartEdit(\''+esc(w.id)+'\')">Editar</button><button class="btn sm dr" onclick="wireDel(\''+esc(w.id)+'\')">Excluir</button><button class="btn sm" onclick="S.wireDetail=null;S.wireReveal={};R();">Voltar</button></div>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" onclick="wireCopy(\''+esc(w.id)+'\')">Copiar</button><button class="btn sm" onclick="wireStartEdit(\''+esc(w.id)+'\')">Editar</button><button class="btn sm dr" onclick="wireDel(\''+esc(w.id)+'\')">Excluir</button><button class="btn sm" onclick="S.wireDetail=null;S.wireReveal={};R();">Voltar</button></div>';
   h+='</div>';
   h+='<div style="background:#FAFAFA;border-radius:6px;padding:1rem;font-family:monospace;font-size:13px;line-height:1.9;color:#2D2D2D">';
   h+=wireRow('Beneficiary Name','benefName',w);
@@ -1879,11 +1907,7 @@ function vWireDetail(){
 function wireRow(lbl,key,w){
   var v=w[key];
   if(!v)return '';
-  var sensitive=wireIsSensitive(key);
-  var shown=!sensitive||S.wireReveal[w.id+':'+key];
-  var display=shown?esc(v):esc(wireMask(v));
-  var btn=sensitive?'<button class="btn sm" style="padding:2px 8px;font-size:11px;margin-left:8px" onclick="wireToggleField(\''+esc(w.id)+'\',\''+key+'\')">'+(shown?'ocultar':'revelar')+'</button>':'';
-  return '<div style="display:flex;align-items:baseline;gap:8px"><span style="display:inline-block;min-width:180px;color:#626367">'+lbl+':</span><span style="flex:1">'+display+'</span>'+btn+'</div>';
+  return '<div style="display:flex;align-items:baseline;gap:8px"><span style="display:inline-block;min-width:180px;color:#626367">'+lbl+':</span><span style="flex:1">'+esc(v)+'</span></div>';
 }
 function wireAllRevealed(id){
   var w=null;for(var i=0;i<S.wires.length;i++)if(S.wires[i].id===id){w=S.wires[i];break;}
@@ -2045,7 +2069,7 @@ function vOrders(){
   else if(fSt==='N\u00e3o iniciado')os=os.filter(function(o){return pct(o)===0;});
   else if(fSt==='Urgente')os=os.filter(function(o){var w=wireStatus(o);return w&&w.cls!=='';});
   var h='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">';
-  h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Offshore &amp; Onshore</div><h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Demandas Operations</h1></div>';
+  h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Offshore &amp; Onshore</div><h1 style="font-size:26px;font-weight:700;color:#2D2D2D">SubDocs</h1></div>';
   h+='<button class="btn p" onclick="togForm()">+ Nova ordem</button></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.5rem">';
   h+='<div style="background:#4F5053;border-radius:8px;padding:.875rem"><div style="font-size:11px;color:#ccc;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:700">Total</div><div style="font-size:24px;font-weight:700;color:#fff">'+all.length+'</div></div>';
@@ -2057,7 +2081,12 @@ function vOrders(){
   h+='<div class="filter-bar"><span style="font-size:13px;font-weight:600;color:#4F5053">Filtros:</span>';
   h+='<select style="width:180px" onchange="setFilter(\'fiv\',this.value)"><option value="">Todos os fundos</option>'+fivOpts.map(function(f){return'<option value="'+esc(f)+'"'+(fFiv===f?' selected':'')+'>'+esc(f)+'</option>';}).join('')+'</select>';
   h+='<select style="width:150px" onchange="setFilter(\'tipo\',this.value)"><option value="">Todos os tipos</option><option value="Subscription"'+(fTipo==='Subscription'?' selected':'')+'>Subscription</option><option value="Redemption"'+(fTipo==='Redemption'?' selected':'')+'>Redemption</option></select>';
-  h+='<select style="width:150px" onchange="setFilter(\'status\',this.value)"><option value="">Todos os status</option><option value="N\u00e3o iniciado">N\u00e3o iniciado</option><option value="Em andamento">Em andamento</option><option value="Conclu\u00eddo">Conclu\u00eddo</option><option value="Urgente">Wire urgente</option></select>';
+  var stOpts=['','N\u00e3o iniciado','Em andamento','Conclu\u00eddo','Urgente'];
+  var stLabels={'':'Todos os status','N\u00e3o iniciado':'N\u00e3o iniciado','Em andamento':'Em andamento','Conclu\u00eddo':'Conclu\u00eddo','Urgente':'Wire urgente'};
+  var stSel='<select style="width:150px" onchange="setFilter(\'status\',this.value)">';
+  for(var si=0;si<stOpts.length;si++){var v=stOpts[si];stSel+='<option value="'+esc(v)+'"'+(fSt===v?' selected':'')+'>'+esc(stLabels[v])+'</option>';}
+  stSel+='</select>';
+  h+=stSel;
   if(fFiv||fTipo||fSt)h+='<button class="btn sm" onclick="clearFilters()">Limpar</button>';
   h+='<span style="font-size:12px;color:#888">'+os.length+'/'+all.length+'</span></div>';
   if(os.length===0){h+='<div style="text-align:center;padding:3rem 1rem;color:#626367;border:1px dashed #ccc;border-radius:12px">'+(all.length===0?'Nenhuma ordem. Clique em <strong style="color:#F15D1B">+ Nova ordem</strong>.':'Nenhuma ordem com esses filtros.')+'</div>';}

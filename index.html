@@ -167,7 +167,7 @@ var DF_IVD=['TERA HF SP','TERA CORE BONDS SP','TERA TREND FOLLOWING SP'];
 var DF_FUNDS={investidor:DF_INV.slice(),investido:DF_IVD.slice(),admins:ADMINS_DEF.slice()};
 
 // ─── STATE ────────────────────────────────────────────────
-var S={view:'home',placeholderTitle:'',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],docs:[],wires:[],cotas:{config:[],entries:{},feriados:[],hiddenDates:[]},cotasView:{startDate:null,filterOwner:'',filterAdm:'',filterShow:'all',search:''},cotasCell:null,cotasSelected:null,wireDetail:null,wireEdit:null,wireNew:false,wireSearch:'',wireReveal:{},selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false,docNew:false,docEdit:null,admNew:false,admSearch:''};
+var S={view:'home',placeholderTitle:'',orders:[],funds:JSON.parse(JSON.stringify(DF_FUNDS)),onshore:[],docs:[],wires:[],cotas:{config:[],entries:{},feriados:[],hiddenDates:[]},cotasView:{startDate:null,filterOwner:'',filterAdm:'',filterShow:'all',search:''},cotasCell:null,cotasSelected:null,fundsPage:1,fundDocs:{manuais:[],regulamentos:{},ppm:{}},docsTab:'manuais',docsSearch:'',wireDetail:null,wireEdit:null,wireNew:false,wireSearch:'',wireReveal:{},selId:null,showForm:false,focusStep:0,loading:true,filters:{fiv:'',tipo:'',status:''},editId:null,onSearch:'',onDetail:null,onEdit:null,onNew:false,docNew:false,docEdit:null,admNew:false,admSearch:''};
 var _ik=false,_saveTimer=null,_refreshTimer=null,_token=null,_lastView=null,_cotasClipboard=null;
 
 // ─── HELPERS ──────────────────────────────────────────────
@@ -237,8 +237,8 @@ function init(){
     .then(function(txt){
       try{var d=JSON.parse(txt);
         if(d.error==='unauthorized'){logout();return;}
-        S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));if(!S.funds.admins||S.funds.admins.length===0)S.funds.admins=ADMINS_DEF.slice();S.onshore=d.onshore&&d.onshore.length?d.onshore:ON_DEFAULT.slice();S.docs=d.docs||[];S.wires=d.wires||[];S.cotas=d.cotas||{config:[],entries:{},feriados:[],hiddenDates:[]};if(!S.cotas.config)S.cotas.config=[];if(!S.cotas.entries)S.cotas.entries={};if(!S.cotas.feriados)S.cotas.feriados=[];if(!S.cotas.hiddenDates)S.cotas.hiddenDates=[];}
-      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));if(!S.funds.admins||!S.funds.admins.length)S.funds.admins=ADMINS_DEF.slice();S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.wires=lsLoad('sd_wires')||[];S.cotas=lsLoad('sd_cotas')||{config:[],entries:{},feriados:[],hiddenDates:[]};if(!S.cotas.hiddenDates)S.cotas.hiddenDates=[];}
+        S.orders=d.orders||[];S.funds=d.funds||JSON.parse(JSON.stringify(DF_FUNDS));S.funds.admins=[];S.onshore=d.onshore&&d.onshore.length?d.onshore:ON_DEFAULT.slice();S.docs=d.docs||[];S.wires=d.wires||[];S.cotas=d.cotas||{config:[],entries:{},feriados:[],hiddenDates:[]};if(!S.cotas.config)S.cotas.config=[];if(!S.cotas.entries)S.cotas.entries={};if(!S.cotas.feriados)S.cotas.feriados=[];if(!S.cotas.hiddenDates)S.cotas.hiddenDates=[];S.fundDocs=d.fundDocs||{manuais:[],regulamentos:{},ppm:{}};if(!S.fundDocs.manuais)S.fundDocs.manuais=[];if(!S.fundDocs.regulamentos)S.fundDocs.regulamentos={};if(!S.fundDocs.ppm)S.fundDocs.ppm={};}
+      catch(e){S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.funds.admins=[];S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.wires=lsLoad('sd_wires')||[];S.cotas=lsLoad('sd_cotas')||{config:[],entries:{},feriados:[],hiddenDates:[]};if(!S.cotas.hiddenDates)S.cotas.hiddenDates=[];S.fundDocs=lsLoad('sd_fundDocs')||{manuais:[],regulamentos:{},ppm:{}};}
       S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);
     })
     .catch(function(){      S.orders=lsLoad('sd_orders')||[];S.funds=lsLoad('sd_funds')||JSON.parse(JSON.stringify(DF_FUNDS));S.onshore=lsLoad('sd_onshore')||ON_DEFAULT.slice();S.docs=lsLoad('sd_docs')||[];S.wires=lsLoad('sd_wires')||[];S.cotas=lsLoad('sd_cotas')||{config:[],entries:{},feriados:[],hiddenDates:[]};if(!S.cotas.hiddenDates)S.cotas.hiddenDates=[];S.loading=false;R();_refreshTimer=setInterval(autoRefresh,2000);});
@@ -273,52 +273,117 @@ function saveF(){lsSave('sd_funds',S.funds);showSave();syncToSheet('funds',S.fun
 function saveDocs(){lsSave('sd_docs',S.docs);showSave();syncToSheet('docs',S.docs);}
 function saveW(){lsSave('sd_wires',S.wires);showSave();syncToSheet('wires',S.wires);}
 function saveCotas(){lsSave('sd_cotas',S.cotas);showSave();syncToSheet('cotas',S.cotas);}
+function saveFundDocs(){lsSave('sd_fundDocs',S.fundDocs);showSave();syncToSheet('fundDocs',S.fundDocs);}
 
 function vDocs(){
-  // migracao: documentos com categorias antigas (Wire Instructions / Cotas Onshore)
-  // sao movidos automaticamente pra "Manuais" (categoria default).
-  var migrated=false;
-  S.docs.forEach(function(d){
-    if(d.cat==='Wire Instructions'||d.cat==='Cotas Onshore'){
-      d.cat='Manuais';
-      migrated=true;
-    }
-  });
-  if(migrated)saveDocs();
-  var cats=['Manuais','Regulamentos Onshore','PPM/Offering Memorandum/AoA'];
-  var icons={'Manuais':'','Regulamentos Onshore':'','PPM/Offering Memorandum/AoA':''};
+  var tab=S.docsTab||'manuais';
+  // breadcrumb interno
   var h='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem">';
-  h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Reposit&oacute;rio</div>';
-  h+='<h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Documentos</h1></div>';
-  h+='<button class="btn p" onclick="docNewOpen()">+ Adicionar documento</button></div>';
-  if(S.docNew)h+=docForm(false,null);
-  for(var c=0;c<cats.length;c++){
-    var cat=cats[c];
-    var docs=S.docs.filter(function(d){return d.cat===cat;});
-    h+='<div style="margin-bottom:1.5rem">';
-    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #F15D1B">';
-    h+='<h2 style="font-size:17px;font-weight:700;color:#2D2D2D">'+cat+'</h2>';
-    h+='<span style="font-size:12px;color:#888;font-weight:400">('+docs.length+')</span></div>';
-    if(docs.length===0){
-      h+='<div style="color:#888;font-size:13px;padding:12px 0">Nenhum documento nesta categoria ainda.</div>';
-    }else{
-      h+='<div style="display:flex;flex-direction:column;gap:8px">';
-      for(var i=0;i<docs.length;i++){
-        var d=docs[i];var realIdx=S.docs.indexOf(d);
-        if(S.docEdit===realIdx){h+=docForm(true,d);continue;}
-        h+='<div class="card" style="display:flex;align-items:center;gap:12px">';
-        h+='<div style="font-size:24px;color:#626367">&#128196;</div>';
-        h+='<div style="flex:1"><div style="font-weight:600;font-size:14px;color:#2D2D2D">'+esc(d.nome)+'</div>';
-        h+='<div style="font-size:12px;color:#626367;margin-top:2px">'+esc(d.desc||'')+'</div></div>';
-        h+='<div style="display:flex;gap:6px;flex-shrink:0">';
-        h+='<a href="'+esc(d.url)+'" target="_blank" download style="text-decoration:none"><button class="btn p" style="font-size:12px;padding:5px 12px">&#11015; Baixar</button></a>';
-        h+='<button class="btn sm" onclick="docEditOpen('+realIdx+')" style="font-size:14px">&#9998;</button>';
-        h+='<button class="btn sm dr" onclick="docDel('+realIdx+')">&#10005;</button></div></div>';
-      }
-      h+='</div>';
-    }
+  h+='<div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Reposit\u00f3rio de documentos</div>';
+  h+='<h1 style="font-size:26px;font-weight:700;color:#2D2D2D">Onshore e Offshore</h1></div>';
+  h+='</div>';
+  // 3 tabs
+  h+='<div style="display:flex;gap:8px;margin-bottom:1.5rem;border-bottom:2px solid #EAE7E3">';
+  var tabs=[['manuais','Manuais'],['regulamentos','Regulamentos Onshore'],['ppm','PPM/Offering Memorandum/AoA']];
+  tabs.forEach(function(t){
+    var active=tab===t[0];
+    var bg=active?'#FCE5D4':'transparent';
+    var bd=active?'2px solid #F15D1B':'2px solid transparent';
+    var col=active?'#7A3C10':'#626367';
+    h+='<button onclick="S.docsTab=\''+t[0]+'\';R();" style="background:'+bg+';border:none;border-bottom:'+bd+';padding:10px 16px;cursor:pointer;font-size:14px;font-weight:'+(active?'700':'500')+';color:'+col+';font-family:inherit;margin-bottom:-2px">'+esc(t[1])+'</button>';
+  });
+  h+='</div>';
+
+  if(tab==='manuais')h+=vDocsManuais();
+  else if(tab==='regulamentos')h+=vDocsFundLinked('regulamentos','Regulamentos Onshore',S.onshore.map(function(o){return o.nome||o.fundo||o;}));
+  else if(tab==='ppm')h+=vDocsFundLinked('ppm','PPM/Offering Memorandum/AoA',S.funds.investido||[]);
+  return h;
+}
+
+// sub-view: Manuais (lista livre)
+function vDocsManuais(){
+  var manuais=(S.fundDocs&&S.fundDocs.manuais)||[];
+  var q=(S.docsSearch||'').toLowerCase();
+  var filtered=q?manuais.filter(function(m){return(m.nome||'').toLowerCase().indexOf(q)>=0||(m.desc||'').toLowerCase().indexOf(q)>=0;}):manuais;
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:10px;flex-wrap:wrap">';
+  h+='<input class="ip" id="docs-search" style="width:280px" placeholder="Buscar manual..." value="'+esc(S.docsSearch||'')+'" oninput="S.docsSearch=this.value;R();setTimeout(function(){var el=document.getElementById(\'docs-search\');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0);">';
+  h+='<div style="font-size:13px;color:#626367">'+filtered.length+' manual(is)</div>';
+  h+='</div>';
+  // dropzone
+  h+=docUploadZone('manuais',null);
+  // lista
+  if(filtered.length===0){
+    h+='<div style="color:#888;font-size:13px;padding:20px;text-align:center;background:#FAFAFA;border-radius:8px">Nenhum manual encontrado.</div>';
+  }else{
+    h+='<div style="display:flex;flex-direction:column;gap:8px;margin-top:1rem">';
+    filtered.forEach(function(d){
+      var realIdx=manuais.indexOf(d);
+      h+=docCardLine(d,'manuais',realIdx);
+    });
     h+='</div>';
   }
+  return h;
+}
+
+// sub-view: regulamentos / ppm — uma linha por fundo
+function vDocsFundLinked(kind,title,fundosList){
+  var dict=(S.fundDocs&&S.fundDocs[kind])||{};
+  if(!fundosList||fundosList.length===0){
+    return '<div style="color:#888;font-size:13px;padding:20px;text-align:center;background:#FAFAFA;border-radius:8px">Nenhum fundo cadastrado para vincular '+esc(title)+'. Cadastre os fundos em Ve\u00edculos primeiro.</div>';
+  }
+  var q=(S.docsSearch||'').toLowerCase();
+  var filtered=q?fundosList.filter(function(f){return(typeof f==='string'?f:(f.nome||f.fundo||'')).toLowerCase().indexOf(q)>=0;}):fundosList;
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:10px;flex-wrap:wrap">';
+  h+='<input class="ip" id="docs-search" style="width:280px" placeholder="Buscar fundo..." value="'+esc(S.docsSearch||'')+'" oninput="S.docsSearch=this.value;R();setTimeout(function(){var el=document.getElementById(\'docs-search\');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0);">';
+  h+='<div style="font-size:13px;color:#626367">'+filtered.length+' fundo(s)</div>';
+  h+='</div>';
+  h+='<div style="display:flex;flex-direction:column;gap:8px">';
+  filtered.forEach(function(f){
+    var nome=typeof f==='string'?f:(f.nome||f.fundo||'');
+    var doc=dict[nome];
+    h+='<div class="card" style="display:flex;align-items:center;gap:12px;padding:12px">';
+    h+='<div style="flex:1"><div style="font-weight:600;font-size:14px;color:#2D2D2D">'+esc(nome)+'</div>';
+    if(doc){
+      h+='<div style="font-size:12px;color:#626367;margin-top:2px">'+esc(doc.nome)+' &middot; '+(doc.size?Math.round(doc.size/1024)+' KB':'')+'</div>';
+    }else{
+      h+='<div style="font-size:12px;color:#9A958F;margin-top:2px">Nenhum documento anexado</div>';
+    }
+    h+='</div><div style="display:flex;gap:6px;flex-shrink:0">';
+    if(doc){
+      h+='<a href="'+esc(doc.fileUrl||doc.url||'#')+'" target="_blank" style="text-decoration:none"><button class="btn p" style="font-size:12px;padding:5px 12px">Abrir</button></a>';
+      h+='<button class="btn sm dr" onclick="docFundRemove(\''+kind+'\',\''+esc(nome).replace(/\\\\/g,"\\\\\\\\").replace(/\'/g,"\\\\\'")+'\')">Remover</button>';
+    }
+    h+='<button class="btn sm" onclick="docFundUploadTrigger(\''+kind+'\',\''+esc(nome).replace(/\\\\/g,"\\\\\\\\").replace(/\'/g,"\\\\\'")+'\')">'+(doc?'Substituir':'Anexar')+'</button>';
+    h+='</div></div>';
+  });
+  h+='</div>';
+  // input file oculto, compartilhado
+  h+='<input type="file" id="doc-fund-file" style="display:none" onchange="docFundFileSelected(event)">';
+  return h;
+}
+
+// linha de doc na lista de manuais
+function docCardLine(d,kind,realIdx){
+  var h='<div class="card" style="display:flex;align-items:center;gap:12px;padding:12px">';
+  h+='<div style="font-size:24px;color:#626367">&#128196;</div>';
+  h+='<div style="flex:1"><div style="font-weight:600;font-size:14px;color:#2D2D2D">'+esc(d.nome)+'</div>';
+  if(d.desc)h+='<div style="font-size:12px;color:#626367;margin-top:2px">'+esc(d.desc)+'</div>';
+  h+='<div style="font-size:11px;color:#9A958F;margin-top:2px">'+(d.size?Math.round(d.size/1024)+' KB &middot; ':'')+(d.uploadedAt?(new Date(d.uploadedAt)).toLocaleDateString('pt-BR'):'')+(d.uploadedBy?' por '+esc(d.uploadedBy):'')+'</div>';
+  h+='</div><div style="display:flex;gap:6px;flex-shrink:0">';
+  h+='<a href="'+esc(d.fileUrl||d.url||'#')+'" target="_blank" style="text-decoration:none"><button class="btn p" style="font-size:12px;padding:5px 12px">Abrir</button></a>';
+  h+='<button class="btn sm dr" onclick="docManualRemove('+realIdx+')">Remover</button>';
+  h+='</div></div>';
+  return h;
+}
+
+// dropzone (drag-and-drop ou clique pra abrir seletor)
+function docUploadZone(kind,fundoNome){
+  var h='<div id="doc-dropzone" ondragover="event.preventDefault();this.style.background=\'#FCE5D4\';this.style.borderColor=\'#F15D1B\'" ondragleave="this.style.background=\'#FAFAFA\';this.style.borderColor=\'#DDD8D2\'" ondrop="docDropHandler(event,\''+kind+'\','+(fundoNome?'\''+fundoNome+'\'':'null')+')" onclick="document.getElementById(\'doc-file-input\').click()" style="border:2px dashed #DDD8D2;background:#FAFAFA;border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .15s ease;margin-bottom:1rem">';
+  h+='<div style="font-size:28px;color:#9A958F;margin-bottom:6px">&#128206;</div>';
+  h+='<div style="font-size:14px;color:#626367;font-weight:600">Clique aqui ou arraste um arquivo</div>';
+  h+='<div style="font-size:12px;color:#9A958F;margin-top:4px">PDF, DOCX, XLSX (at\u00e9 ~30MB)</div>';
+  h+='<input type="file" id="doc-file-input" style="display:none" onchange="docFileSelected(event,\''+kind+'\','+(fundoNome?'\''+fundoNome+'\'':'null')+')">';
+  h+='</div>';
   return h;
 }
 
@@ -445,6 +510,92 @@ function docEditSave(){
 }
 function docDel(i){if(!confirm('Excluir este documento?'))return;S.docs.splice(i,1);S.docEdit=null;saveDocs();R();}
 
+// ─── UPLOAD DE ARQUIVOS PRO DRIVE (via Apps Script) ──────────
+// Trigger global do file picker pra um fundo especifico (regulamentos / ppm)
+function docFundUploadTrigger(kind,fundoNome){
+  var inp=document.getElementById('doc-fund-file');
+  if(!inp)return;
+  inp._kind=kind;
+  inp._fundo=fundoNome;
+  inp.click();
+}
+function docFundFileSelected(e){
+  var inp=e.target;
+  var f=inp.files&&inp.files[0];
+  if(!f)return;
+  var kind=inp._kind;var fundo=inp._fundo;
+  docUploadFile(f,kind,fundo);
+  inp.value=''; // permite reupload do mesmo arquivo
+}
+// drop direto na zona da aba Manuais
+function docDropHandler(e,kind,fundoNome){
+  e.preventDefault();
+  var dz=document.getElementById('doc-dropzone');
+  if(dz){dz.style.background='#FAFAFA';dz.style.borderColor='#DDD8D2';}
+  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(!f)return;
+  docUploadFile(f,kind,fundoNome);
+}
+// click-to-select na aba Manuais
+function docFileSelected(e,kind,fundoNome){
+  var f=e.target.files&&e.target.files[0];
+  if(!f)return;
+  docUploadFile(f,kind,fundoNome);
+  e.target.value='';
+}
+// le o arquivo, manda em base64 pro Apps Script, e salva o link
+function docUploadFile(file,kind,fundoNome){
+  // limite ~30MB pra nao explodir o Apps Script (50MB hard limit, mas deixa folga)
+  if(file.size>30*1024*1024){
+    alert('Arquivo muito grande ('+(Math.round(file.size/1024/1024))+' MB). Limite: 30 MB.');
+    return;
+  }
+  // overlay de progresso
+  var ov=document.createElement('div');
+  ov.id='doc-upload-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:600';
+  ov.innerHTML='<div style="background:white;color:#2D2D2D;padding:24px 36px;border-radius:8px;text-align:center"><div style="margin-bottom:8px">Enviando <strong>'+esc(file.name)+'</strong>\u2026</div><div style="font-size:12px;color:#9A958F">Por favor aguarde \u2014 pode levar alguns segundos.</div></div>';
+  document.body.appendChild(ov);
+  var rd=new FileReader();
+  rd.onload=function(ev){
+    // resultado: "data:mime;base64,XXXX..."
+    var dataUrl=ev.target.result;
+    var b64=dataUrl.split(',')[1]||'';
+    fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'upload',token:_token||'',fileName:file.name,mimeType:file.type||'application/octet-stream',base64:b64})})
+      .then(function(r){return r.text();})
+      .then(function(txt){
+        document.body.removeChild(ov);
+        var resp;try{resp=JSON.parse(txt);}catch(e){resp=null;}
+        if(!resp||!resp.ok){alert('Falha no upload: '+(resp&&resp.detail?resp.detail:'erro desconhecido'));return;}
+        var doc={id:resp.file.id,nome:resp.file.name,fileUrl:resp.file.url,size:resp.file.size,mimeType:resp.file.mimeType,uploadedAt:new Date().toISOString(),uploadedBy:currentUser||''};
+        if(kind==='manuais'){
+          if(!S.fundDocs.manuais)S.fundDocs.manuais=[];
+          S.fundDocs.manuais.unshift(doc);
+        }else{
+          if(!S.fundDocs[kind])S.fundDocs[kind]={};
+          S.fundDocs[kind][fundoNome]=doc;
+        }
+        saveFundDocs();
+        R();
+      })
+      .catch(function(err){
+        if(document.getElementById('doc-upload-overlay'))document.body.removeChild(ov);
+        alert('Erro de rede no upload: '+err);
+      });
+  };
+  rd.readAsDataURL(file);
+}
+function docManualRemove(idx){
+  if(!confirm('Remover este manual? O arquivo permanece no Google Drive (mas perde o v\u00ednculo no sistema).'))return;
+  S.fundDocs.manuais.splice(idx,1);
+  saveFundDocs();R();
+}
+function docFundRemove(kind,fundoNome){
+  if(!confirm('Remover documento deste fundo? O arquivo permanece no Google Drive.'))return;
+  if(S.fundDocs[kind])delete S.fundDocs[kind][fundoNome];
+  saveFundDocs();R();
+}
+
 
 // ─── RENDER ───────────────────────────────────────────────
 function R(){
@@ -465,9 +616,9 @@ function R(){
     var viewLabels={
       home:'Atividades',
       orders:'SubDocs',detail:'SubDocs',
-      onshore:'Ve\u00edculos Internos',
-      funds:'Investidos e Investidores',
-      docs:'Manuais',
+      onshore:'Ve\u00edculos',
+      funds:'Ve\u00edculos',
+      docs:'Onshore e Offshore',
       email:'E-mail',
       wires:'Wire Instructions',
       cotas:'Cotas',
@@ -525,22 +676,21 @@ function vHome(){
     {label:'SubDocs',target:'orders'},
     {label:'Capital Calls',disabled:true},
     {label:'KYC/AML',disabled:true},
-    {label:'Eventos',disabled:true}
+    {label:'Eventos',disabled:true},
+    {label:'Reports',disabled:true},
+    {label:'Cadastros',disabled:true}
   ]);
   h+=hubSection('Controles',[
-    {label:'Rebate',disabled:true},
     {label:'Cotas',target:'cotas'},
     {label:'NAV',disabled:true},
     {label:'Passivo',disabled:true}
   ]);
   h+=hubSection('Informa\u00e7\u00f5es',[
-    {label:'Ve\u00edculos Internos',target:'onshore'},
-    {label:'Ve\u00edculos Externos',disabled:true},
-    {label:'Investidos e Investidores',target:'funds'},
+    {label:'Ve\u00edculos',target:'funds'},
     {label:'Wire Instructions',target:'wires'}
   ]);
   h+=hubSection('Documentos',[
-    {label:'Manuais',target:'docs'}
+    {label:'Onshore e Offshore',target:'docs'}
   ]);
   h+='</div>';
   return h;
@@ -2254,7 +2404,7 @@ function rForm(isEdit,o){
   h+='</select></div><div class="fg"><label>Fundo investido</label><select id="f-fiv"><option value="">Selecione...</option>';
   fiv.forEach(function(f){h+='<option value="'+esc(f)+'"'+(isEdit&&o.fiv===f?' selected':'')+'>'+esc(f)+'</option>';});
   h+='</select></div></div>';
-  h+='<div class="fg"><label>Gestora / Administradora do fundo investido</label><input type="text" id="f-gest" list="gest-dl" value="'+esc(isEdit?o.gestora||'':'')+'"></div>';
+  h+='<div class="fg"><label>Gestora / Administradora do fundo investido</label><input type="text" id="f-gest" value="'+esc(isEdit?o.gestora||'':'')+'" placeholder="Digite o nome livremente"></div>';
   h+='<div class="fr"><div class="fg"><label>Tipo</label><select id="f-tipo"><option value="Subscription"'+((!isEdit||o.tipo==='Subscription')?' selected':'')+'>Subscription</option><option value="Redemption"'+(isEdit&&o.tipo==='Redemption'?' selected':'')+'>Redemption</option></select></div>';
   if(!ik){h+='<div class="fg"><label>Moeda</label><select id="f-moe"><option value="USD"'+((!isEdit||o.moeda==='USD')?' selected':'')+'>USD</option><option value="EUR"'+(isEdit&&o.moeda==='EUR'?' selected':'')+'>EUR</option><option value="BRL"'+(isEdit&&o.moeda==='BRL'?' selected':'')+'>BRL</option></select></div>';}
   else{h+='<div class="fg"><label>&nbsp;</label><div style="padding:9px 12px;background:#F7F7F7;border-radius:8px;font-size:13px;color:#626367">In-Kind \u2014 sem moeda</div></div>';}
@@ -2266,63 +2416,43 @@ function rForm(isEdit,o){
 }
 
 function vFunds(){
-  var h='<div style="margin-bottom:1.5rem"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Configura\u00e7\u00f5es</div><h1 style="font-size:22px;font-weight:700;color:#2D2D2D">Gerenciar fundos</h1></div>';
+  var page=S.fundsPage||1;
+  var h='<div style="margin-bottom:1.5rem"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#F15D1B;font-weight:700;margin-bottom:4px">Cadastros</div><h1 style="font-size:22px;font-weight:700;color:#2D2D2D">Ve\u00edculos</h1></div>';
 
-  // Fundos investidores e investidos em grid compacto
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
-  var keys=[['investidor','Fundos investidores'],['investido','Fundos investidos']];
-  for(var k=0;k<keys.length;k++){
-    var key=keys[k][0],lbl=keys[k][1],lst=S.funds[key]||[];
-    h+='<div class="card" style="border-top:3px solid #F15D1B">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
-    h+='<div style="font-weight:700;color:#4F5053;font-size:15px">'+lbl+' <span style="font-size:12px;color:#888;font-weight:400">('+lst.length+')</span></div>';
-    h+='<button class="btn sm" onclick="addF(\''+key+'\')">+ Adicionar</button></div>';
-    h+='<div style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:5px">';
-    for(var i=0;i<lst.length;i++){
-      h+='<div style="display:flex;gap:6px"><input type="text" value="'+esc(lst[i])+'" style="font-size:13px;padding:6px 8px" onchange="editF(\''+key+'\','+i+',this.value)">';
-      h+='<button class="btn sm" style="flex-shrink:0" onclick="rmvF(\''+key+'\','+i+')">&times;</button></div>';
+  if(page===1){
+    // PAGINA 1: investidores + investidos
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
+    var keys=[['investidor','Fundos investidores'],['investido','Fundos investidos']];
+    for(var k=0;k<keys.length;k++){
+      var key=keys[k][0],lbl=keys[k][1],lst=S.funds[key]||[];
+      h+='<div class="card" style="border-top:3px solid #F15D1B">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+      h+='<div style="font-weight:700;color:#4F5053;font-size:15px">'+lbl+' <span style="font-size:12px;color:#888;font-weight:400">('+lst.length+')</span></div>';
+      h+='<button class="btn sm" onclick="addF(\''+key+'\')">+ Adicionar</button></div>';
+      h+='<div style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:5px">';
+      for(var i=0;i<lst.length;i++){
+        h+='<div style="display:flex;gap:6px"><input type="text" value="'+esc(lst[i])+'" style="font-size:13px;padding:6px 8px" onchange="editF(\''+key+'\','+i+',this.value)">';
+        h+='<button class="btn sm" style="flex-shrink:0" onclick="rmvF(\''+key+'\','+i+')">&times;</button></div>';
+      }
+      h+='</div></div>';
     }
-    h+='</div></div>';
+    h+='</div>';
+  }else{
+    // PAGINA 2: onshore (reusa a view existente)
+    h+=vOnshore();
   }
+
+  // paginador
+  h+='<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #EAE7E3">';
+  h+='<button class="btn sm" '+(page===1?'disabled style="opacity:.4;cursor:not-allowed"':'onclick="S.fundsPage=1;R();"')+'>1 \u2014 Investidores/Investidos</button>';
+  h+='<button class="btn sm" '+(page===2?'disabled style="opacity:.4;cursor:not-allowed"':'onclick="S.fundsPage=2;R();"')+'>2 \u2014 Onshore</button>';
   h+='</div>';
 
-  // Gestoras — busca + lista virtualizada
-  var admins=S.funds.admins||[];
-  var admQ=(S.admSearch||'').toLowerCase();
-  var admFiltered=admQ?admins.filter(function(a){return a.toLowerCase().indexOf(admQ)>=0;}):admins;
-
-  h+='<div class="card" style="border-top:3px solid #F15D1B">';
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
-  h+='<div style="font-weight:700;color:#4F5053;font-size:15px">Gestoras / Administradoras <span style="font-size:12px;color:#888;font-weight:400">('+admFiltered.length+'/'+admins.length+')</span></div>';
-  h+='<button class="btn sm" onclick="addAdm()">+ Adicionar</button></div>';
-  h+='<input type="text" id="adm-search" placeholder="Buscar gestora ou administradora..." style="margin-bottom:10px;font-size:13px;padding:6px 10px" value="'+esc(S.admSearch||'')+'" oninput="admSearch(this.value)">';
-  h+='<div id="adm-new">';
-  if(S.admNew){
-    h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
-    h+='<input type="text" id="adm-input" placeholder="Nome da gestora/administradora..." style="flex:1;font-size:13px;padding:6px 10px">';
-    h+='<button class="btn sm p" onclick="saveAdm()">Adicionar</button>';
-    h+='<button class="btn sm" onclick="cancelAdm()">Cancelar</button></div>';
-  }
-  h+='</div>';
-
-  // Duas colunas com scroll
-  h+='<div data-scroll-id="adm-list" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:300px;overflow-y:auto">';
-  for(var i=0;i<admFiltered.length;i++){
-    var realIdx=admins.indexOf(admFiltered[i]);
-    h+='<div style="display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:6px;background:#F7F7F7">';
-    h+='<span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(admFiltered[i])+'">'+esc(admFiltered[i])+'</span>';
-    h+='<button class="btn sm" onclick="admEditInline('+realIdx+')" style="padding:1px 6px;font-size:11px;flex-shrink:0">&#9998;</button>';
-    h+='<button onclick="rmvF(\'admins\','+realIdx+')" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;padding:0 2px;line-height:1;flex-shrink:0">&times;</button></div>';
-  }
-  if(admFiltered.length===0)h+='<div style="color:#888;font-size:13px;padding:8px;grid-column:span 2">Nenhuma gestora encontrada.</div>';
-  h+='</div>';
-  h+='<p style="font-size:11px;color:#aaa;margin-top:8px">'+admFiltered.length+' exibidas &middot; Salvo automaticamente.</p>';
-  h+='</div>';
   return h;
 }
 
 // ─── ACTIONS ──────────────────────────────────────────────
-function go(v){S.view=v;S.showForm=false;S.editId=null;S.onDetail=null;S.onEdit=null;S.onNew=false;S.wireDetail=null;S.wireEdit=null;S.wireNew=false;S.wireSearch='';S.wireReveal={};S.placeholderTitle='';S.cotasCell=null;S.cotasSelected=null;var ov=document.getElementById('cotas-overlay');if(ov){ov.style.display='none';ov.innerHTML='';}var sc=document.getElementById('cotas-scroll');if(sc)sc._scrollInitialized=false;R();}
+function go(v){S.view=v;S.showForm=false;S.editId=null;S.onDetail=null;S.onEdit=null;S.onNew=false;S.wireDetail=null;S.wireEdit=null;S.wireNew=false;S.wireSearch='';S.wireReveal={};S.placeholderTitle='';S.cotasCell=null;S.cotasSelected=null;S.docsTab='manuais';S.docsSearch='';S.fundsPage=1;var ov=document.getElementById('cotas-overlay');if(ov){ov.style.display='none';ov.innerHTML='';}var sc=document.getElementById('cotas-scroll');if(sc)sc._scrollInitialized=false;R();}
 function goPlaceholder(title){S.view='placeholder';S.placeholderTitle=title;R();}
 function setFilter(k,v){S.filters[k]=v;R();}
 function clearFilters(){S.filters={fiv:'',tipo:'',status:''};R();}

@@ -295,8 +295,8 @@ function vDocs(){
   h+='</div>';
 
   if(tab==='manuais')h+=vDocsManuais();
-  else if(tab==='regulamentos')h+=vDocsFundLinked('regulamentos','Regulamentos Onshore',S.onshore.map(function(o){return Array.isArray(o)?o[0]:(o.nome||o.fundo||o);}));
-  else if(tab==='ppm')h+=vDocsFundLinked('ppm','PPM/Offering Memorandum/AoA',S.funds.investido||[]);
+  else if(tab==='regulamentos')h+=vDocsFundLinked('regulamentos','Regulamentos Onshore',S.onshore.map(function(o){return Array.isArray(o)?{nome:o[0],sub:o[6]||''}:{nome:(o.nome||o.fundo||o),sub:''};}));
+  else if(tab==='ppm')h+=vDocsFundLinked('ppm','PPM/Offering Memorandum/AoA',(S.funds.investido||[]).map(function(f){return{nome:f,sub:''};}));
   return h;
 }
 
@@ -332,17 +332,19 @@ function vDocsFundLinked(kind,title,fundosList){
     return '<div style="color:#888;font-size:13px;padding:20px;text-align:center;background:#FAFAFA;border-radius:8px">Nenhum fundo cadastrado para vincular '+esc(title)+'. Cadastre os fundos em Ve\u00edculos primeiro.</div>';
   }
   var q=(S.docsSearch||'').toLowerCase();
-  var filtered=q?fundosList.filter(function(f){return(typeof f==='string'?f:(f.nome||f.fundo||'')).toLowerCase().indexOf(q)>=0;}):fundosList;
+  var filtered=q?fundosList.filter(function(f){var n=typeof f==='string'?f:(f.nome||'');var s=typeof f==='string'?'':(f.sub||'');return n.toLowerCase().indexOf(q)>=0||s.toLowerCase().indexOf(q)>=0;}):fundosList;
   var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:10px;flex-wrap:wrap">';
   h+='<input class="ip" id="docs-search" style="width:280px" placeholder="Buscar fundo..." value="'+esc(S.docsSearch||'')+'" oninput="S.docsSearch=this.value;R();setTimeout(function(){var el=document.getElementById(\'docs-search\');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0);">';
   h+='<div style="font-size:13px;color:#626367">'+filtered.length+' fundo(s)</div>';
   h+='</div>';
   h+='<div style="display:flex;flex-direction:column;gap:8px">';
   filtered.forEach(function(f){
-    var nome=typeof f==='string'?f:(f.nome||f.fundo||'');
+    var nome=typeof f==='string'?f:(f.nome||'');
+    var sub=typeof f==='string'?'':(f.sub||'');
     var doc=dict[nome];
     h+='<div class="card" style="display:flex;align-items:center;gap:12px;padding:12px">';
     h+='<div style="flex:1"><div style="font-weight:600;font-size:14px;color:#2D2D2D">'+esc(nome)+'</div>';
+    if(sub)h+='<div style="font-size:11px;color:#9A958F;margin-top:1px;font-family:monospace">'+esc(sub)+'</div>';
     if(doc){
       h+='<div style="font-size:12px;color:#626367;margin-top:2px">'+esc(doc.nome)+' &middot; '+(doc.size?Math.round(doc.size/1024)+' KB':'')+'</div>';
     }else{
@@ -357,7 +359,6 @@ function vDocsFundLinked(kind,title,fundosList){
     h+='</div></div>';
   });
   h+='</div>';
-  // input file oculto, compartilhado
   h+='<input type="file" id="doc-fund-file" style="display:none" onchange="docFundFileSelected(event)">';
   return h;
 }

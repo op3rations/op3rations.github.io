@@ -296,7 +296,7 @@ function vDocs(){
 
   if(tab==='manuais')h+=vDocsManuais();
   else if(tab==='regulamentos')h+=vDocsFundLinked('regulamentos','Regulamentos Onshore',S.onshore.map(function(o){return Array.isArray(o)?{nome:o[0],sub:o[6]||''}:{nome:(o.nome||o.fundo||o),sub:''};}));
-  else if(tab==='ppm')h+=vDocsFundLinked('ppm','PPM/Offering Memorandum/AoA',(S.funds.investido||[]).map(function(f){return{nome:f,sub:''};}));
+  else if(tab==='ppm')h+=vDocsFundLinked('ppm','PPM/Offering Memorandum/AoA',(S.funds.investidor||[]).map(function(f){return{nome:f,sub:''};}));
   return h;
 }
 

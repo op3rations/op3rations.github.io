@@ -2443,11 +2443,19 @@ function vFunds(){
     h+=vOnshore();
   }
 
-  // paginador
-  h+='<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #EAE7E3">';
-  h+='<button class="btn sm" '+(page===1?'disabled style="opacity:.4;cursor:not-allowed"':'onclick="S.fundsPage=1;R();"')+'>1 \u2014 Investidores/Investidos</button>';
-  h+='<button class="btn sm" '+(page===2?'disabled style="opacity:.4;cursor:not-allowed"':'onclick="S.fundsPage=2;R();"')+'>2 \u2014 Onshore</button>';
-  h+='</div>';
+  // paginador (estilo segmented control)
+  h+='<div style="display:flex;justify-content:center;margin-top:2rem;padding-top:1.25rem;border-top:1px solid #EAE7E3">';
+  h+='<div style="display:inline-flex;background:#F5F3F1;border-radius:10px;padding:4px;gap:2px">';
+  var pages=[[1,'Investidores e Investidos'],[2,'Base Onshore']];
+  pages.forEach(function(p){
+    var n=p[0],label=p[1],active=page===n;
+    var bg=active?'white':'transparent';
+    var col=active?'#F15D1B':'#626367';
+    var weight=active?'700':'500';
+    var shadow=active?'box-shadow:0 1px 3px rgba(0,0,0,.08);':'';
+    h+='<button onclick="S.fundsPage='+n+';R();" style="background:'+bg+';border:none;color:'+col+';font-weight:'+weight+';padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;'+shadow+'transition:all .15s ease;display:flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:'+(active?'#F15D1B':'#DDD8D2')+';color:white;font-size:11px;font-weight:700">'+n+'</span>'+esc(label)+'</button>';
+  });
+  h+='</div></div>';
 
   return h;
 }
